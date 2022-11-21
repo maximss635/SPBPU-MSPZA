@@ -3,17 +3,17 @@ import os.path
 
 
 class Logger(logging.Logger):
-    def __init__(self):
-        logging.Logger.__init__(self, name="all_logger")
+    def __init__(self, name):
+        logging.Logger.__init__(self, name)
 
         self._log_path_dir = "logs"
         self._log_file_name = "all.logs"
 
         self._ensure_dir()
 
-        self.addHandler(
-            logging.FileHandler(self._log_path_dir + "/" + self._log_file_name)
-        )
+        handler = logging.FileHandler(self._log_path_dir + "/" + self._log_file_name)
+        handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
+        self.addHandler(handler)
         self.setLevel(logging.DEBUG)
 
     def _ensure_dir(self):
