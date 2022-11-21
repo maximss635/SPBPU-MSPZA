@@ -7,7 +7,7 @@ class Logger(logging.Logger):
         logging.Logger.__init__(self, name)
 
         self._log_path_dir = "logs"
-        self._log_file_name = "all.logs"
+        self._log_file_name = "all.log"
 
         self._ensure_dir()
 
