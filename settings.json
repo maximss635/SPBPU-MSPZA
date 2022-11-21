@@ -1,0 +1,5 @@
+{
+  "sign_tool_worker": {
+    "cmd_format": "signtool -v [filename]"
+  }
+}

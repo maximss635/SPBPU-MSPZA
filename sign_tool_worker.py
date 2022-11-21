@@ -6,14 +6,16 @@ from utils import Logger
 class SignToolWorker:
     _PATH_EXECUTABLE = "signtool"
 
-    def __init__(self):
+    def __init__(self, settings):
         self.__logger = Logger()
+        self._cmd_format = settings["cmd_format"]
+
+        self.__logger.debug("Init %s with settings: %s", self.__class__.__name__, settings)
 
     def verify(self, filepath_to_verify):
         self.__logger.debug("Verify: %s", filepath_to_verify)
 
-        cmd = "%s -v %s" % (self._PATH_EXECUTABLE, filepath_to_verify)
-        cmd = cmd.split(" ")
+        cmd = self._cmd_format.replace("[filename]", filepath_to_verify).split(" ")
         self.__logger.debug("cmd = {}".format(cmd))
 
         with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
