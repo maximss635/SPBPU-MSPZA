@@ -1,4 +1,3 @@
-import copy
 import subprocess
 import threading
 import time

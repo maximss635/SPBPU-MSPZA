@@ -1,9 +1,7 @@
+import json
 import time
 
-from sign_tool_worker import SignToolWorker
-from netstat_worker import NetstatWorker
-
-import json
+from workers.netstat_worker import NetstatWorker
 
 
 def _load_settings():
