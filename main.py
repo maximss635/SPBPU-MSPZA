@@ -1,4 +1,8 @@
+import time
+
 from sign_tool_worker import SignToolWorker
+from netstat_worker import NetstatWorker
+
 import json
 
 
@@ -10,5 +14,18 @@ def _load_settings():
 if __name__ == "__main__":
     settings = _load_settings()
 
-    worker = SignToolWorker(settings["sign_tool_worker"])
-    worker.verify("test/test_executable")
+    # worker = SignToolWorker(settings["sign_tool_worker"])
+    # worker.verify("test/test_executable")
+
+    worker = NetstatWorker(settings["netsat_worker"])
+    worker.start_scan()
+
+    for i in range(10):
+        time.sleep(1)
+        model = worker.get_current_model()
+
+        print("model:")
+        for model_entity in model:
+            print(model_entity)
+
+    worker.stop_scan()
