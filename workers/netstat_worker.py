@@ -1,3 +1,4 @@
+import copy
 import subprocess
 import threading
 import time
@@ -7,7 +8,7 @@ from utils import Logger
 
 class NetstatWorker:
     def __init__(self, settings):
-        self._cmd = settings["cmd_format"]
+        self.settings = copy.deepcopy(settings)
         self.thr = None
         self.p = None
 
@@ -18,12 +19,12 @@ class NetstatWorker:
         )
 
     def start_scan(self):
-        self.__logger.debug("Start scanning with netstat")
+        cmd = self.settings["cmd_format"]
 
-        self.p = subprocess.Popen(
-            self._cmd.split(" "), stdout=subprocess.PIPE, shell=True
-        )
-        self.thr = NetstatReader(self.p)
+        self.__logger.debug("Start scanning with command: %s", cmd)
+        self.p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+
+        self.thr = NetstatReader(self.p, self.settings["header"])
         self.thr.start()
 
     def stop_scan(self):
@@ -36,20 +37,26 @@ class NetstatWorker:
 
 
 class NetstatReader(threading.Thread):
-    def __init__(self, p):
+    def __init__(self, p, head_list):
         threading.Thread.__init__(self)
 
-        self.logger = Logger(self.__class__.name)
+        self.logger = Logger(self.__class__.__name__)
 
         self.p = p
 
         self.run_flag = True
         self.model = []
+        self.head_list = head_list
+
+        self.logger.debug("Init %s", self.__class__.__name__)
 
     def stop(self):
+        self.logger.debug("Stopping thread")
         self.run_flag = False
 
     def run(self) -> None:
+        self.logger.debug("Running thread")
+
         while self.run_flag:
             time.sleep(0.5)
 
@@ -75,16 +82,12 @@ class NetstatReader(threading.Thread):
             self.logger.debug("Line after preprocess: %s", str(line))
 
             try:
-                self.logger.debug("Adding to model '%s'", str(line))
-                self.model.append(
-                    {
-                        "proto": line[0],
-                        "local_addr": line[1],
-                        "foreign_addr": line[2],
-                        "state": line[3],
-                        "pid": line[4],
-                    }
-                )
+                new_entity = {title: line[i] for i, title in enumerate(self.head_list)}
+
+                new_entity = self._additional_entity_preprocess(new_entity)
+
+                self.logger.debug("Adding to model entity '%s'", str(new_entity))
+                self.model.append(new_entity)
             except Exception as err:
                 self.logger.error(
                     "Error while adding to model '%s' : %s", str(line), err
@@ -102,3 +105,14 @@ class NetstatReader(threading.Thread):
         line = [i for i in line if i]
 
         return line
+
+    def _additional_entity_preprocess(self, entity):
+        self.logger.debug("Additional entity preprocess")
+
+        if 'pid' in entity:
+            if '/' in entity["pid"]:
+                old = entity["pid"]
+                entity['pid'], entity['programm_name'] = entity["pid"].split('/')
+                self.logger.debug("%s' -> %s, %s", old, entity['pid'], entity['programm_name'])
+
+        return entity

@@ -18,7 +18,7 @@ if __name__ == "__main__":
     worker = NetstatWorker(settings["netsat_worker"])
     worker.start_scan()
 
-    for i in range(10):
+    while True:
         time.sleep(1)
         model = worker.get_current_model()
 

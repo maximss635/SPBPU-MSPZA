@@ -3,6 +3,7 @@
     "cmd_format": "signtool -v [filename]"
   },
   "netsat_worker": {
-    "cmd_format": "netstat /a /o"
+    "cmd_format": "netstat -p",
+    "header": ["proto", "recv", "send", "local_addr", "foreign_addr", "state", "pid"]
   }
 }
