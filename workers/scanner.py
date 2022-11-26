@@ -17,3 +17,6 @@ class Scanner:
             self._procs.append(proc)
 
         self._logger.debug("Scanned %d process", len(self._procs))
+
+    def procs(self):
+        return self._procs

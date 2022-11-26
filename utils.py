@@ -14,6 +14,7 @@ class Logger(logging.Logger):
         handler = logging.FileHandler(self._log_path_dir + "/" + self._log_file_name)
         handler.setFormatter(logging.Formatter("[%(name)s] %(message)s"))
         self.addHandler(handler)
+        self.addHandler(logging.StreamHandler())
         self.setLevel(logging.DEBUG)
 
     def _ensure_dir(self):

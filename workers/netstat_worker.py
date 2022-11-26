@@ -45,7 +45,7 @@ class NetstatReader(threading.Thread):
         self.p = p
 
         self.run_flag = True
-        self.model = []
+        self.model = {}
         self.head_list = head_list
 
         self.logger.debug("Init %s", self.__class__.__name__)
@@ -87,7 +87,13 @@ class NetstatReader(threading.Thread):
                 new_entity = self._additional_entity_preprocess(new_entity)
 
                 self.logger.debug("Adding to model entity '%s'", str(new_entity))
-                self.model.append(new_entity)
+
+                try:
+                    pid = int(new_entity["pid"])
+                except Exception:
+                    pid = new_entity["pid"]
+
+                self.model[pid] = new_entity
             except Exception as err:
                 self.logger.error(
                     "Error while adding to model '%s' : %s", str(line), err
