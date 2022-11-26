@@ -10,7 +10,9 @@ class SignToolWorker:
         self.__logger = Logger(self.__class__.__name__)
         self._cmd_format = settings["cmd_format"]
 
-        self.__logger.debug("Init %s with settings: %s", self.__class__.__name__, settings)
+        self.__logger.debug(
+            "Init %s with settings: %s", self.__class__.__name__, settings
+        )
 
     def verify(self, filepath_to_verify):
         self.__logger.debug("Verify: %s", filepath_to_verify)

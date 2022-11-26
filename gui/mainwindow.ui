@@ -43,6 +43,11 @@
            <string>network activity</string>
           </property>
          </column>
+         <column>
+          <property name="text">
+           <string>attributes</string>
+          </property>
+         </column>
         </widget>
        </item>
        <item>
@@ -53,25 +58,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_network_activity">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>100</height>
-          </size>
-         </property>
+        <widget class="QTableWidget" name="table_network_activity">
          <property name="maximumSize">
           <size>
            <width>16777215</width>
            <height>100</height>
           </size>
          </property>
-         <property name="autoFillBackground">
-          <bool>true</bool>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
+         <column>
+          <property name="text">
+           <string/>
+          </property>
+         </column>
         </widget>
        </item>
        <item>
