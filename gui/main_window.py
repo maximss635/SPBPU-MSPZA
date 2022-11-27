@@ -30,8 +30,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.checkBox_exepath.setChecked(True)
         self.checkBox_netactiuvity.setChecked(True)
 
-        self._network_activity_cache = list()
-
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
 
@@ -40,24 +38,17 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.button_add.clicked.connect(self._on_button_add)
 
-    def slot_new_items(self, *_, **__):
-        entity, row_num = self._thr.get_last_data()
-        self._put_to_table(self.main_table, entity, row_num)
-
-    def _update_network_cache(self, proc):
-        t = (proc.pid, proc.name())
-        if t in self._network_activity_cache:
-            self._network_activity_cache.remove(t)
-        self._network_activity_cache.append(t)
-
-        self.table_network_activity.setRowCount(len(self._network_activity_cache))
-        for i, t in enumerate(self._network_activity_cache):
-            self.table_network_activity.setItem(i, 0, QTableWidgetItem(str(t[0])))
-            self.table_network_activity.setItem(i, 1, QTableWidgetItem(str(t[1])))
-
-    def _on_button_start_scan(self):
+    def _create_thread(self):
         self._thr = ThreadScanner()
         self._thr.signal_new_item.connect(self.slot_new_items)
+        self._thr.signal_new_cache.connect(self.slot_update_cache_table)
+
+    def slot_new_items(self, args):
+        entity, row = args
+        self._put_to_table(self.main_table, entity, row)
+
+    def _on_button_start_scan(self):
+        self._create_thread()
 
         self.main_table.setRowCount(0)
 
@@ -69,9 +60,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         )
 
     def _put_to_table(self, table, printable_entity, row_num):
-
-        print("_put_to_table", printable_entity)
-
+        print("put_to_table", printable_entity, row_num)
         table.setRowCount(table.rowCount() + 1)
 
         if self.checkBox_pid.isChecked():
@@ -117,10 +106,17 @@ class MainWindow(Ui_MainWindow, QMainWindow):
     def _on_button_clear(self):
         self.main_table_2.setRowCount(0)
 
+    def slot_update_cache_table(self, cache):
+        self.table_network_activity.setRowCount(len(cache))
+        for i, t in enumerate(cache):
+            self.table_network_activity.setItem(i, 0, QTableWidgetItem(str(t[0])))
+            self.table_network_activity.setItem(i, 1, QTableWidgetItem(str(t[1])))
+
 
 class ThreadScanner(threading.Thread, QObject):
 
-    signal_new_item = pyqtSignal()
+    signal_new_item = pyqtSignal(object)
+    signal_new_cache = pyqtSignal(object)
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -128,6 +124,8 @@ class ThreadScanner(threading.Thread, QObject):
 
         self._netconnection_worker = NetConnectionWorker()
         self._proc_scanner = Scanner()
+
+        self._network_activity_cache = list()
 
         self.flag_run = False
 
@@ -144,14 +142,9 @@ class ThreadScanner(threading.Thread, QObject):
     def stop(self):
         self.flag_run = False
 
-    def get_last_data(self):
-        if hasattr(self, "_last_data"):
-            return self._last_data
-        return None, None
-
     def _put_to_table(self, entity, row_num):
         self._last_data = (entity, row_num)
-        self.signal_new_item.emit()
+        self.signal_new_item.emit((entity, row_num))
 
     def run(self):
 
@@ -172,11 +165,10 @@ class ThreadScanner(threading.Thread, QObject):
                 network_activity,
                 sign_check_str,
             ) = self._get_printable_proc_information(proc, netconnection_model)
-            print("Add to printable table", full_path, network_activity, sign_check_str)
+            print("Add to printable table", i)
 
             self._put_to_table(
-                (proc.pid, full_path, network_activity, sign_check_str),
-                i,
+                (proc.pid, full_path, network_activity, sign_check_str), i
             )
 
     def _get_printable_proc_information(self, proc, netconnection_model):
@@ -237,3 +229,11 @@ class ThreadScanner(threading.Thread, QObject):
             return psutil.Process(proc.pid).exe()
         except Exception:
             return proc.name()
+
+    def _update_network_cache(self, proc):
+        t = (proc.pid, proc.name())
+        if t in self._network_activity_cache:
+            self._network_activity_cache.remove(t)
+        self._network_activity_cache.append(t)
+
+        self.signal_new_cache.emit(self._network_activity_cache)
