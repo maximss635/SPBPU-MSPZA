@@ -1,7 +1,9 @@
 import signify.authenticode.signed_pe
+import time
 
 
 def check_sign(path):
+    time.sleep(1)
     try:
         with open(path, "rb") as f:
             pefile = signify.authenticode.signed_pe.SignedPEFile(f)
