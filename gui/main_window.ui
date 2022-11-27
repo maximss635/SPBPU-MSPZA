@@ -57,6 +57,11 @@
            <string>network activity</string>
           </property>
          </column>
+         <column>
+          <property name="text">
+           <string>signature</string>
+          </property>
+         </column>
         </widget>
        </item>
        <item>

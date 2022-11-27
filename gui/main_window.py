@@ -1,12 +1,14 @@
-import psutil
 import socket
+
+import psutil
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
 
-from gui.main_window_ui import Ui_MainWindow
 from gui.ask_process_window import AskProcessWindow
+from gui.main_window_ui import Ui_MainWindow
 from workers.net_connection_worker import NetConnectionWorker
-from workers.scanner import Scanner
 from workers.pe_worker import analyze_pe_file
+from workers.scanner import Scanner
+from workers.sign_check import check_sign
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
@@ -75,7 +77,15 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
             self._update_network_cache(proc)
 
-        return full_path, network_activity_str
+        status, err = check_sign(full_path)
+        if err:
+            sign_check_str = err
+        elif status:
+            sign_check_str = "True"
+        else:
+            sign_check_str = "Unknown"
+
+        return full_path, network_activity_str, sign_check_str
 
     def _update_network_cache(self, proc):
         t = (proc.pid, proc.name())
@@ -97,17 +107,16 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.main_table.setRowCount(len(self._proc_scanner.procs()))
 
         for i, proc in enumerate(self._proc_scanner.procs()):
-            full_path, network_activity = self._get_printable_proc_information(proc, netconnection_model)
+            full_path, network_activity, sign_check_str = self._get_printable_proc_information(proc, netconnection_model)
 
             # print("Add to printable table", full_path, network_activity)
 
-            self._put_to_table(self.main_table, (proc.pid, full_path, network_activity), i)
+            self._put_to_table(self.main_table, (proc.pid, full_path, network_activity, sign_check_str), i)
 
     @staticmethod
     def _put_to_table(table, printable_entity, row_num):
-        table.setItem(row_num, 0, QTableWidgetItem(str(printable_entity[0])))
-        table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
-        table.setItem(row_num, 2, QTableWidgetItem(str(printable_entity[2])))
+        for i, p in enumerate(printable_entity):
+            table.setItem(row_num, i, QTableWidgetItem(str(p)))
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
