@@ -36,15 +36,14 @@ def __analyze_section(section):
 
 def analyze_pe_file(filepath):
     try:
-        LOGGER.debug("1")
-        pe = pefile.PE(filepath)
+        LOGGER.debug("analyze_pe_file %s", filepath)
 
-        LOGGER.debug("2")
+        pe = pefile.PE(filepath)
         result_list = []
         for section in pe.sections:
             result_list.append(__analyze_section(section))
 
-        return ",".join(result_list)
+        return ", ".join(result_list)
     except Exception as err:
         LOGGER.error(err)
         return ""
