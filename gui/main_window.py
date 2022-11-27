@@ -32,7 +32,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.checkBox_sign.setChecked(True)
         self.checkBox_exepath.setChecked(True)
         self.checkBox_netactiuvity.setChecked(True)
-        self.checkBox_packing.setChecked(True)
+        self.checkBox_packing.setChecked(False)
 
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))

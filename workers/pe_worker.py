@@ -49,7 +49,7 @@ def analyze_pe_file(filepath):
         return result_struct
     except Exception as err:
         LOGGER.error(err)
-        return ""
+        return {}
 
 
 packer = pypackerdetect.PyPackerDetect()
