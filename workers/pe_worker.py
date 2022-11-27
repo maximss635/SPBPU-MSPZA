@@ -39,11 +39,11 @@ def analyze_pe_file(filepath):
         LOGGER.debug("analyze_pe_file %s", filepath)
 
         pe = pefile.PE(filepath)
-        result_list = []
+        result_struct = {}
         for section in pe.sections:
-            result_list.append(__analyze_section(section))
+            result_struct[section.Misc_PhysicalAddress] = __analyze_section(section)
 
-        return ", ".join(result_list)
+        return result_struct
     except Exception as err:
         LOGGER.error(err)
         return ""

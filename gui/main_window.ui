@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -55,11 +55,6 @@
          <column>
           <property name="text">
            <string>network activity</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>attributes</string>
           </property>
          </column>
         </widget>
@@ -143,6 +138,11 @@
          </column>
          <column>
           <property name="text">
+           <string>section</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
            <string>attributes</string>
           </property>
          </column>
@@ -154,6 +154,13 @@
           <widget class="QPushButton" name="button_add">
            <property name="text">
             <string>Add</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="button_clear">
+           <property name="text">
+            <string>Clear</string>
            </property>
           </widget>
          </item>

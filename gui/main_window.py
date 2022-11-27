@@ -22,13 +22,14 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.button_start_scan.clicked.connect(self._on_button_start_scan)
         self.button_stop_scan.clicked.connect(self._on_button_stop_scan)
+        self.button_clear.clicked.connect(self._on_button_clear)
 
         self._network_activity_cache = list()
 
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
 
-        self.tabWidget.setTabText(0, "Autoscan")
+        self.tabWidget.setTabText(0, "Scan")
         self.tabWidget.setTabText(1, "Manually")
 
         self.button_add.clicked.connect(self._on_button_add)
@@ -51,12 +52,13 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if net_connection:
 
             try:
-                r_ip = net_connection.raddr.ip,
+                r_ip = net_connection.raddr.ip.__str__()
+                print(r_ip)
             except Exception:
                 r_ip = "?"
 
             try:
-                r_port = net_connection.raddr.port,
+                r_port = net_connection.raddr.port.__str__()
             except Exception:
                 r_port = "?"
 
@@ -92,7 +94,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         for i, proc in enumerate(self._proc_scanner.procs()):
             full_path, network_activity = self._get_printable_proc_information(proc, netconnection_model)
 
-            print("Add to printable table", full_path, network_activity)
+            # print("Add to printable table", full_path, network_activity)
 
             self._put_to_table(self.main_table, (proc.pid, full_path, network_activity), i)
 
@@ -119,11 +121,17 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         result = analyze_pe_file(path_proc)
 
         rows = self.main_table_2.rowCount()
-        self.main_table_2.setRowCount(rows + 1)
-        self.main_table_2.setItem(rows, 0, QTableWidgetItem(path_proc))
-        self.main_table_2.setItem(rows, 1, QTableWidgetItem(str(result)))
+        self.main_table_2.setRowCount(rows + len(result.keys()))
+
+        for i, (section_addr, attrs) in enumerate(result.items()):
+            self.main_table_2.setItem(rows + i, 0, QTableWidgetItem(path_proc))
+            self.main_table_2.setItem(rows + i, 1, QTableWidgetItem(hex(section_addr)))
+            self.main_table_2.setItem(rows + i, 2, QTableWidgetItem(attrs))
 
     def debug(self, msg):
         debug_panel = getattr(self, "debug_panel", None)
         if debug_panel:
             self.debug_panel.setPlainText(self.debug_panel.toPlainText() + "\n" + msg)
+
+    def _on_button_clear(self):
+        self.main_table_2.setRowCount(0)
