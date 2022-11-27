@@ -41,28 +41,77 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QTableWidget" name="main_table">
-         <column>
-          <property name="text">
-           <string>pid</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>exe-path</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>network activity</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>signature</string>
-          </property>
-         </column>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QTableWidget" name="main_table">
+           <column>
+            <property name="text">
+             <string>pid</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>exe-path</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>network activity</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>signature</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QCheckBox" name="checkBox_pid">
+             <property name="text">
+              <string>pid</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_exepath">
+             <property name="text">
+              <string>exe-path</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_netactiuvity">
+             <property name="text">
+              <string>network activity</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBox_sign">
+             <property name="text">
+              <string>signature</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="label">

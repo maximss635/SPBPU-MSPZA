@@ -12,8 +12,7 @@ from workers.sign_check import check_sign
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
-
-    def __init__(self, settings):
+    def __init__(self):
         Ui_MainWindow.__init__(self)
         QMainWindow.__init__(self)
 
@@ -26,6 +25,11 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.button_start_scan.clicked.connect(self._on_button_start_scan)
         self.button_stop_scan.clicked.connect(self._on_button_stop_scan)
         self.button_clear.clicked.connect(self._on_button_clear)
+
+        self.checkBox_pid.setChecked(True)
+        self.checkBox_sign.setChecked(True)
+        self.checkBox_exepath.setChecked(True)
+        self.checkBox_netactiuvity.setChecked(True)
 
         self._network_activity_cache = list()
 
@@ -45,13 +49,19 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             return proc.name()
 
     def _get_printable_proc_information(self, proc, netconnection_model):
-        full_path = self._get_full_path_of_proc(proc)
+        if self.checkBox_exepath.isChecked():
+            full_path = self._get_full_path_of_proc(proc)
+        else:
+            full_path = ""
 
         network_activity_str = None
 
-        self._netconnection_worker.scan()
+        if netconnection_model:
+            net_connection_entity = netconnection_model.get(proc.pid)
+        else:
+            net_connection_entity = None
+            network_activity_str = ""
 
-        net_connection_entity = netconnection_model.get(proc.pid)
         if net_connection_entity:
             try:
                 r_ip = net_connection_entity.raddr.ip.__str__()
@@ -77,13 +87,16 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
             self._update_network_cache(proc)
 
-        status, err = check_sign(full_path)
-        if err:
-            sign_check_str = err
-        elif status:
-            sign_check_str = "True"
+        if self.checkBox_sign.isChecked():
+            status, err = check_sign(full_path)
+            if err:
+                sign_check_str = err
+            elif status:
+                sign_check_str = "True"
+            else:
+                sign_check_str = "Unknown"
         else:
-            sign_check_str = "Unknown"
+            sign_check_str = ""
 
         return full_path, network_activity_str, sign_check_str
 
@@ -100,23 +113,39 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def _on_button_start_scan(self):
         self._proc_scanner.scan()
-        self._netconnection_worker.scan()
 
-        netconnection_model = self._netconnection_worker.get_model()
+        if self.checkBox_netactiuvity.isChecked():
+            self._netconnection_worker.scan()
+            netconnection_model = self._netconnection_worker.get_model()
+        else:
+            netconnection_model = None
 
         self.main_table.setRowCount(len(self._proc_scanner.procs()))
 
         for i, proc in enumerate(self._proc_scanner.procs()):
-            full_path, network_activity, sign_check_str = self._get_printable_proc_information(proc, netconnection_model)
+            (
+                full_path,
+                network_activity,
+                sign_check_str,
+            ) = self._get_printable_proc_information(proc, netconnection_model)
 
             # print("Add to printable table", full_path, network_activity)
 
-            self._put_to_table(self.main_table, (proc.pid, full_path, network_activity, sign_check_str), i)
+            self._put_to_table(
+                self.main_table,
+                (proc.pid, full_path, network_activity, sign_check_str),
+                i,
+            )
 
-    @staticmethod
-    def _put_to_table(table, printable_entity, row_num):
-        for i, p in enumerate(printable_entity):
-            table.setItem(row_num, i, QTableWidgetItem(str(p)))
+    def _put_to_table(self, table, printable_entity, row_num):
+        if self.checkBox_pid.isChecked():
+            table.setItem(row_num, 0, QTableWidgetItem(str(printable_entity[0])))
+        else:
+            table.setItem(row_num, 0, QTableWidgetItem(""))
+
+        table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
+        table.setItem(row_num, 2, QTableWidgetItem(str(printable_entity[2])))
+        table.setItem(row_num, 3, QTableWidgetItem(str(printable_entity[3])))
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
