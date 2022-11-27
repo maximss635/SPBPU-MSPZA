@@ -76,7 +76,12 @@
          </property>
          <column>
           <property name="text">
-           <string/>
+           <string>pid</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>name</string>
           </property>
          </column>
         </widget>

@@ -1,4 +1,5 @@
 import psutil
+import socket
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
 
 from gui.main_window_ui import Ui_MainWindow
@@ -48,40 +49,44 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self._netconnection_worker.scan()
 
-        net_connection = netconnection_model.get(proc.pid)
-        if net_connection:
-
+        net_connection_entity = netconnection_model.get(proc.pid)
+        if net_connection_entity:
             try:
-                r_ip = net_connection.raddr.ip.__str__()
-                print(r_ip)
+                r_ip = net_connection_entity.raddr.ip.__str__()
             except Exception:
                 r_ip = "?"
 
             try:
-                r_port = net_connection.raddr.port.__str__()
+                r_port = net_connection_entity.raddr.port.__str__()
             except Exception:
                 r_port = "?"
 
-            network_activity_str = "{}:{} -> {}:{}".format(
-                net_connection.laddr.ip,
-                net_connection.laddr.port,
+            proto = "TCP" if socket.SOCK_STREAM else "UDP"
+
+            network_activity_str = "({}) {}:{} -> {}:{}".format(
+                proto,
+                net_connection_entity.laddr.ip,
+                net_connection_entity.laddr.port,
                 r_ip,
                 r_port,
             )
 
-        self._update_network_cache(proc)
+            print(net_connection_entity)
+
+            self._update_network_cache(proc)
 
         return full_path, network_activity_str
 
     def _update_network_cache(self, proc):
-        t = f"{proc.name()} ({proc.pid})"
+        t = (proc.pid, proc.name())
         if t in self._network_activity_cache:
             self._network_activity_cache.remove(t)
         self._network_activity_cache.append(t)
 
         self.table_network_activity.setRowCount(len(self._network_activity_cache))
         for i, t in enumerate(self._network_activity_cache):
-            self.table_network_activity.setItem(i, 0, QTableWidgetItem(t))
+            self.table_network_activity.setItem(i, 0, QTableWidgetItem(str(t[0])))
+            self.table_network_activity.setItem(i, 1, QTableWidgetItem(str(t[1])))
 
     def _on_button_start_scan(self):
         self._proc_scanner.scan()
