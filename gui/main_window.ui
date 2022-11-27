@@ -70,6 +70,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_packing">
+           <property name="text">
+            <string>packing</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -92,6 +99,11 @@
          <column>
           <property name="text">
            <string>signature</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>packing</string>
           </property>
          </column>
         </widget>

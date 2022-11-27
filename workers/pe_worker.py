@@ -1,6 +1,9 @@
-import pefile
-from utils import Logger
+import os
 
+import pefile
+import pypackerdetect
+
+from utils import Logger
 
 LOGGER = Logger("pe_worker")
 
@@ -21,9 +24,9 @@ def __analyze_section(section):
     r, w, x = False, False, False
     if (section.Characteristics & 0x00000020) or (section.Characteristics & 0x20000000):
         x = True
-    if (section.Characteristics & 0x80000000):
+    if section.Characteristics & 0x80000000:
         w = True
-    if (section.Characteristics & 0x40000000):
+    if section.Characteristics & 0x40000000:
         r = True
 
     result = ""
@@ -47,3 +50,17 @@ def analyze_pe_file(filepath):
     except Exception as err:
         LOGGER.error(err)
         return ""
+
+
+packer = pypackerdetect.PyPackerDetect()
+
+
+def check_packer(path):
+    if not os.path.exists(path):
+        return ""
+
+    try:
+        result = packer.detect(path)
+        return result["detections"]
+    except Exception as err:
+        return str(err)

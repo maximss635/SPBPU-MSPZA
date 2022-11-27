@@ -1,15 +1,15 @@
 import socket
 import threading
-import time
 
 import psutil
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget, QTreeWidgetItem
 from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem, QTreeWidgetItem,
+                             QWidget)
 
 from gui.ask_process_window import AskProcessWindow
 from gui.main_window_ui import Ui_MainWindow
 from workers.net_connection_worker import NetConnectionWorker
-from workers.pe_worker import analyze_pe_file
+from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
 
@@ -32,6 +32,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.checkBox_sign.setChecked(True)
         self.checkBox_exepath.setChecked(True)
         self.checkBox_netactiuvity.setChecked(True)
+        self.checkBox_packing.setChecked(True)
 
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
@@ -51,16 +52,22 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self._put_to_table(self.main_table, entity, row)
 
     def _on_button_start_scan(self):
+        need_model = (
+            self.checkBox_pid.isChecked(),
+            self.checkBox_exepath.isChecked(),
+            self.checkBox_netactiuvity.isChecked(),
+            self.checkBox_sign.isChecked(),
+            self.checkBox_packing.isChecked()
+        )
+
+        for i, need_flag in enumerate(need_model):
+            self.main_table.setColumnHidden(i, not need_flag)
+
         self._create_thread()
 
         self.main_table.setRowCount(0)
 
-        self._thr.start(
-            self.checkBox_pid.isChecked(),
-            self.checkBox_exepath.isChecked(),
-            self.checkBox_sign.isChecked(),
-            self.checkBox_netactiuvity.isChecked(),
-        )
+        self._thr.start(*need_model)
 
     def _put_to_table(self, table, printable_entity, row_num):
         print("put_to_table", printable_entity, row_num)
@@ -74,6 +81,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
         table.setItem(row_num, 2, QTableWidgetItem(str(printable_entity[2])))
         table.setItem(row_num, 3, QTableWidgetItem(str(printable_entity[3])))
+        table.setItem(row_num, 4, QTableWidgetItem(str(printable_entity[4])))
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
@@ -90,7 +98,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def on_new_proc(self, path_proc):
         print("on_new_proc", path_proc)
-
         result = analyze_pe_file(path_proc)
 
         rows = self.main_table_2.rowCount()
@@ -117,7 +124,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
 
 class ThreadScanner(threading.Thread, QObject):
-
     signal_new_item = pyqtSignal(object)
     signal_new_cache = pyqtSignal(object)
 
@@ -132,11 +138,12 @@ class ThreadScanner(threading.Thread, QObject):
 
         self.flag_run = False
 
-    def start(self, need_pid, need_path, need_sign, need_networkactivity) -> None:
+    def start(self, need_pid, need_path, need_networkactivity, need_sign, need_packing) -> None:
         self.need_pid = need_pid
         self.need_path = need_path
         self.need_sign = need_sign
         self.need_networkactivity = need_networkactivity
+        self.need_packing = need_packing
 
         self.flag_run = True
 
@@ -167,11 +174,12 @@ class ThreadScanner(threading.Thread, QObject):
                 full_path,
                 network_activity,
                 sign_check_str,
+                packed_str
             ) = self._get_printable_proc_information(proc, netconnection_model)
             print("Add to printable table", i)
 
             self._put_to_table(
-                (proc.pid, full_path, network_activity, sign_check_str), i
+                (proc.pid, full_path, network_activity, sign_check_str, packed_str), i
             )
 
     def _get_printable_proc_information(self, proc, netconnection_model):
@@ -224,7 +232,12 @@ class ThreadScanner(threading.Thread, QObject):
         else:
             sign_check_str = ""
 
-        return full_path, network_activity_str, sign_check_str
+        if self.need_packing:
+            is_packed_str = check_packer(full_path)
+        else:
+            is_packed_str = ""
+
+        return full_path, network_activity_str, sign_check_str, is_packed_str
 
     @staticmethod
     def _get_full_path_of_proc(proc):
