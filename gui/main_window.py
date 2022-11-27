@@ -21,6 +21,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.setupUi(self)
 
+        # Pretty gui
+        self.setCentralWidget(self.tabWidget)
+
         self.button_start_scan.clicked.connect(self._on_button_start_scan)
         self.button_stop_scan.clicked.connect(self._on_button_stop_scan)
         self.button_clear.clicked.connect(self._on_button_clear)
