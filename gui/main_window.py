@@ -49,11 +49,22 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         net_connection = netconnection_model.get(proc.pid)
         if net_connection:
+
+            try:
+                r_ip = net_connection.raddr.ip,
+            except Exception:
+                r_ip = "?"
+
+            try:
+                r_port = net_connection.raddr.port,
+            except Exception:
+                r_port = "?"
+
             network_activity_str = "{}:{} -> {}:{}".format(
                 net_connection.laddr.ip,
                 net_connection.laddr.port,
-                net_connection.laddr.ip,
-                net_connection.laddr.port,
+                r_ip,
+                r_port,
             )
 
         self._update_network_cache(proc)
