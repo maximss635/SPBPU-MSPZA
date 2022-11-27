@@ -37,7 +37,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
 
         self.tabWidget.setTabText(0, "Scan")
-        self.tabWidget.setTabText(1, "Manually")
+        self.tabWidget.setTabText(1, "Section analyze")
 
         self.button_add.clicked.connect(self._on_button_add)
 
