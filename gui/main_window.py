@@ -1,17 +1,81 @@
+import os
 import socket
 import threading
 
 import psutil
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import (QMainWindow, QTableWidgetItem, QTreeWidgetItem,
-                             QWidget)
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
 
 from gui.ask_process_window import AskProcessWindow
 from gui.main_window_ui import Ui_MainWindow
+from workers import capa_worker
 from workers.net_connection_worker import NetConnectionWorker
 from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
+
+
+def _capa_parsing(capa_lines):
+    """
+    Парсинг вывод утилиты capa
+    :param capa_lines: Строки для парсинга
+    :rtype capa_lines: list[str]
+    :return: 6 блоков строчек
+    :rtype: tuple[list[str]]
+    """
+    def get_start_index(lines, line_template):
+        for _i, line in enumerate(lines):
+            if line_template in line:
+                while '---------' not in lines[_i]:
+                    _i = _i + 1
+                return 1 + _i
+        return -1
+
+    index_1 = get_start_index(capa_lines, "ATT&CK Tactic")
+    index_2 = get_start_index(capa_lines, "MBC Objective")
+    index_3 = get_start_index(capa_lines, "CAPABILITY")
+
+    def get_stop_index(lines, start_index):
+        for _j, line in enumerate(lines[start_index:]):
+            if '------------' in line:
+                return _j + start_index - 1
+
+        return -1
+
+    index_1_stop = get_stop_index(capa_lines, index_1)
+    index_2_stop = get_stop_index(capa_lines, index_2)
+    index_3_stop = get_stop_index(capa_lines, index_3)
+
+    output_1_2 = capa_lines[index_1:index_1_stop + 1]
+    output_3_4 = capa_lines[index_2:index_2_stop + 1]
+    output_5_6 = capa_lines[index_3:index_3_stop + 1]
+
+    print(output_1_2)
+    print(output_3_4)
+    print(output_5_6)
+
+    output_1, output_2 = [], []
+    for line in output_1_2:
+        if line.startswith("|"):
+            line = line[1:]
+        output_1.append(line.split('|')[0])
+        output_2.append(line.split('|')[1])
+
+    output_3, output_4 = [], []
+    for line in output_3_4:
+        if line.startswith("|"):
+            line = line[1:]
+        output_3.append(line.split('|')[0])
+        output_4.append(line.split('|')[1])
+
+    output_5, output_6 = [], []
+    for line in output_5_6:
+        if line.startswith("|"):
+            line = line[1:]
+        output_5.append(line.split('|')[0])
+        output_6.append(line.split('|')[1])
+
+    return output_1, output_2, output_3, output_4, output_5, output_6
 
 
 class MainWindow(Ui_MainWindow, QMainWindow):
@@ -27,6 +91,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.button_start_scan.clicked.connect(self._on_button_start_scan)
         self.button_stop_scan.clicked.connect(self._on_button_stop_scan)
         self.button_clear.clicked.connect(self._on_button_clear)
+        self.button_capa_analyze.clicked.connect(self._on_button_capa_analyze)
 
         self.checkBox_pid.setChecked(True)
         self.checkBox_sign.setChecked(True)
@@ -37,8 +102,31 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
 
-        self.tabWidget.setTabText(0, "Scan")
-        self.tabWidget.setTabText(1, "Section analyze")
+        self.main_table_2.setColumnWidth(0, 400)
+        self.main_table_2.setColumnWidth(1, 100)
+        self.main_table_2.setColumnWidth(2, 100)
+
+        self.capa_table.setColumnWidth(0, 270)
+        self.capa_table.setColumnWidth(1, 270)
+
+        self.table_network_activity.setColumnWidth(0, 100)
+        self.table_network_activity.setColumnWidth(1, 300)
+
+        self.capa_titles = [
+            "ATT&CK Tactic",
+            "ATT&CK Technique",
+            "MBC Objective",
+            "MBC Behavior",
+            "CAPABILITY",
+            "NAMESPACE"
+        ]
+
+        self.capa_table.setItem(0, 0, QTableWidgetItem(self.capa_titles[0]))
+        self.capa_table.setItem(0, 1, QTableWidgetItem(self.capa_titles[1]))
+        self.capa_table.setItem(2, 0, QTableWidgetItem(self.capa_titles[2]))
+        self.capa_table.setItem(2, 1, QTableWidgetItem(self.capa_titles[3]))
+        self.capa_table.setItem(4, 0, QTableWidgetItem(self.capa_titles[4]))
+        self.capa_table.setItem(4, 1, QTableWidgetItem(self.capa_titles[5]))
 
         self.button_add.clicked.connect(self._on_button_add)
 
@@ -50,6 +138,35 @@ class MainWindow(Ui_MainWindow, QMainWindow):
     def slot_new_items(self, args):
         entity, row = args
         self._put_to_table(self.main_table, entity, row)
+
+    def _on_button_capa_analyze(self):
+        self.capa_table.setItem(1, 0, QTableWidgetItem("Analyzing..."))
+        self.capa_table.setItem(1, 1, QTableWidgetItem("Analyzing..."))
+        self.capa_table.setItem(3, 0, QTableWidgetItem("Analyzing..."))
+        self.capa_table.setItem(3, 1, QTableWidgetItem("Analyzing..."))
+        self.capa_table.setItem(5, 0, QTableWidgetItem("Analyzing..."))
+        self.capa_table.setItem(5, 1, QTableWidgetItem("Analyzing..."))
+
+        signal = capa_worker.run_capa(self.textEdit.toPlainText())
+        signal.connect(self._on_capa_result)
+
+    def _on_capa_result(self, path_out):
+        print("_on_capa_result", path_out)
+
+        with open(path_out, "r") as f:
+            lines = f.readlines()
+
+        # os.remove(path_out)
+        outputs = _capa_parsing(lines)
+
+        i__ = [1, 1, 3, 3, 5, 5]
+        j__ = [0, 1, 0, 1, 0, 1]
+
+        for i, j, output in zip(i__, j__, outputs):
+            new_output = []
+            for line in output:
+                new_output.append(line.replace("\x1b[34m", "").replace("\x1b[0m", ""))
+            self.capa_table.setItem(i, j, QTableWidgetItem("\n".join(new_output) if new_output else "-"))
 
     def _on_button_start_scan(self):
         need_model = (
