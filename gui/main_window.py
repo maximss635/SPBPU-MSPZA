@@ -1,4 +1,4 @@
-import os
+from workers import codediff
 import socket
 import threading
 
@@ -92,6 +92,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.button_start_scan.clicked.connect(self._on_button_start_scan)
         self.button_stop_scan.clicked.connect(self._on_button_stop_scan)
         self.button_capa_analyze.clicked.connect(self._on_button_capa_analyze)
+        self.button_capa_analyze_2.clicked.connect(self._on_button_get_codediff)
 
         self.checkBox_pid.setChecked(True)
         self.checkBox_sign.setChecked(True)
@@ -104,9 +105,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.capa_table.setColumnWidth(0, 270)
         self.capa_table.setColumnWidth(1, 270)
-
-        self.table_network_activity.setColumnWidth(0, 100)
-        self.table_network_activity.setColumnWidth(1, 300)
 
         self.capa_titles = [
             "ATT&CK Tactic",
@@ -127,7 +125,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
     def _create_thread(self):
         self._thr = ThreadScanner()
         self._thr.signal_new_item.connect(self.slot_new_items)
-        self._thr.signal_new_cache.connect(self.slot_update_cache_table)
+        # self._thr.signal_new_cache.connect(self.slot_update_cache_table)
 
     def slot_new_items(self, args):
         entity, row = args
@@ -169,7 +167,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.checkBox_netactiuvity.isChecked(),
             self.checkBox_sign.isChecked(),
             self.checkBox_packing.isChecked(),
-            self.checkBox_sections.isChecked()
+            self.checkBox_sections.isChecked(),
         )
 
         for i, need_flag in enumerate(need_model):
@@ -213,10 +211,11 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.item(row_num, 4).setBackground(Qt.red)
 
-        table.setItem(row_num, 5, QTableWidgetItem(str(printable_entity[5])))
+        attrs = str(printable_entity[5])
+        table.setItem(row_num, 5, QTableWidgetItem(attrs))
 
         have_wx = printable_entity[6]
-        if have_wx:
+        if have_wx or not attrs:
             table.item(row_num, 5).setBackground(Qt.red)
         else:
             table.item(row_num, 5).setBackground(Qt.green)
@@ -251,14 +250,23 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if debug_panel:
             self.debug_panel.setPlainText(self.debug_panel.toPlainText() + "\n" + msg)
 
-    def _on_button_clear(self):
-        self.main_table_2.setRowCount(0)
+    def _on_button_get_codediff(self):
+        print("_on_button_get_codediff")
+        path_exe = self.textEdit_2.toPlainText()
 
-    def slot_update_cache_table(self, cache):
-        self.table_network_activity.setRowCount(len(cache))
-        for i, t in enumerate(cache):
-            self.table_network_activity.setItem(i, 0, QTableWidgetItem(str(t[0])))
-            self.table_network_activity.setItem(i, 1, QTableWidgetItem(str(t[1])))
+        scanner = Scanner()
+        scanner.scan()
+        for p in scanner.procs():
+            if ThreadScanner.get_full_path_of_proc(p) == path_exe:
+                pid = p.pid
+                break
+        else:
+            pid = None
+
+        if not pid:
+            return
+
+        codediff.compare_bin(pid=pid, path_exe=path_exe)
 
 
 class ThreadScanner(threading.Thread, QObject):
@@ -325,7 +333,7 @@ class ThreadScanner(threading.Thread, QObject):
 
     def _get_printable_proc_information(self, proc, netconnection_model):
         if self.need_path:
-            full_path = self._get_full_path_of_proc(proc)
+            full_path = self.get_full_path_of_proc(proc)
         else:
             full_path = ""
 
@@ -392,7 +400,7 @@ class ThreadScanner(threading.Thread, QObject):
         return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx
 
     @staticmethod
-    def _get_full_path_of_proc(proc):
+    def get_full_path_of_proc(proc):
         try:
             return psutil.Process(proc.pid).exe()
         except Exception:

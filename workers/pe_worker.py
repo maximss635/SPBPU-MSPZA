@@ -38,6 +38,11 @@ def __analyze_section(section):
 
 
 def analyze_pe_file(filepath):
+    if not os.path.exists(filepath):
+        return {}
+    if not filepath[-4:] == ".exe":
+        return {}
+
     try:
         LOGGER.debug("analyze_pe_file %s", filepath)
 

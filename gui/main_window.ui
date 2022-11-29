@@ -84,13 +84,6 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QCheckBox" name="checkBox_sections_2">
-           <property name="text">
-            <string>code diff</string>
-           </property>
-          </widget>
-         </item>
         </layout>
        </item>
        <item>
@@ -125,43 +118,10 @@
            <string>sections</string>
           </property>
          </column>
-         <column>
-          <property name="text">
-           <string>code diff</string>
-          </property>
-         </column>
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Last network activity:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="table_network_activity">
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>100</height>
-            </size>
-           </property>
-           <column>
-            <property name="text">
-             <string>pid</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>name</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
+        <layout class="QVBoxLayout" name="verticalLayout"/>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -195,6 +155,70 @@
         </layout>
        </item>
       </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Code diff</string>
+     </attribute>
+     <widget class="QWidget" name="layoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>641</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QTextEdit" name="textEdit_2">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="html">
+          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;meta charset=&quot;utf-8&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+hr { height: 1px; border-width: 0; }
+li.unchecked::marker { content: &quot;\2610&quot;; }
+li.checked::marker { content: &quot;\2612&quot;; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;/home/m/all/ibks/5year/МСПЦА/3/exescaner/test/exe_test_capa.exe&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_capa_analyze_2">
+         <property name="text">
+          <string>Analyze</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QTableWidget" name="table_codediff">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>641</width>
+        <height>361</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Section</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Diff percent</string>
+       </property>
+      </column>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_3">
@@ -264,42 +288,42 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </property>
       <row>
        <property name="text">
-        <string>Новая строка</string>
+        <string> </string>
        </property>
       </row>
       <row>
        <property name="text">
-        <string>Новая строка</string>
+        <string> </string>
        </property>
       </row>
       <row>
        <property name="text">
-        <string>Новая строка</string>
+        <string> </string>
        </property>
       </row>
       <row>
        <property name="text">
-        <string>Новая строка</string>
+        <string> </string>
        </property>
       </row>
       <row>
        <property name="text">
-        <string>Новая строка</string>
+        <string> </string>
        </property>
       </row>
       <row>
        <property name="text">
-        <string>Новая строка</string>
+        <string> </string>
        </property>
       </row>
       <column>
        <property name="text">
-        <string>Новый столбец</string>
+        <string> </string>
        </property>
       </column>
       <column>
        <property name="text">
-        <string>Новый столбец</string>
+        <string> </string>
        </property>
       </column>
      </widget>
