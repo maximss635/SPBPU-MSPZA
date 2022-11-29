@@ -2,3 +2,5 @@
 __pycache__/
 logs/
 test/
+test_cases/
+

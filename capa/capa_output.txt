@@ -11,26 +11,25 @@
 +------------------------+------------------------------------------------------------------------------------+
 | ATT&CK Tactic          | ATT&CK Technique                                                                   |
 |------------------------+------------------------------------------------------------------------------------|
-| [34mDEFENSE EVASION[0m        | [34mObfuscated Files or Information[0m T1027                                              |
-| [34mEXECUTION[0m              | [34mShared Modules[0m T1129                                                               |
+| DEFENSE EVASION        | Obfuscated Files or Information T1027                                              |
+| EXECUTION              | Shared Modules T1129                                                               |
 +------------------------+------------------------------------------------------------------------------------+
 
 +-----------------------------+-------------------------------------------------------------------------------+
 | MBC Objective               | MBC Behavior                                                                  |
 |-----------------------------+-------------------------------------------------------------------------------|
-| [34mCRYPTOGRAPHY[0m                | [34mEncrypt Data[0m::RC4 [C0027.009]                                                 |
-|                             | [34mGenerate Pseudo-random Sequence[0m::RC4 PRGA [C0021.004]                         |
-| [34mDATA[0m                        | [34mEncode Data[0m::XOR [C0026.002]                                                  |
-| [34mDEFENSE EVASION[0m             | [34mObfuscated Files or Information[0m::Encoding-Standard Algorithm [E1027.m02]      |
+| CRYPTOGRAPHY                | Encrypt Data::RC4 [C0027.009]                                                 |
+|                             | Generate Pseudo-random Sequence::RC4 PRGA [C0021.004]                         |
+| DATA                        | Encode Data::XOR [C0026.002]                                                  |
+| DEFENSE EVASION             | Obfuscated Files or Information::Encoding-Standard Algorithm [E1027.m02]      |
 +-----------------------------+-------------------------------------------------------------------------------+
 
 +------------------------------------------------------+------------------------------------------------------+
 | CAPABILITY                                           | NAMESPACE                                            |
 |------------------------------------------------------+------------------------------------------------------|
-| [34mencode data using XOR[0m (2 matches)                    | data-manipulation/encoding/xor                       |
-| [34mencrypt data using RC4 PRGA[0m (2 matches)              | data-manipulation/encryption/rc4                     |
-| [34maccess PEB ldr_data[0m                                  | linking/runtime-linking                              |
-| [34mresolve function by parsing PE exports[0m               | load-code/pe                                         |
+| encode data using XOR (2 matches)                    | data-manipulation/encoding/xor                       |
+| encrypt data using RC4 PRGA (2 matches)              | data-manipulation/encryption/rc4                     |
+| access PEB ldr_data                                  | linking/runtime-linking                              |
+| resolve function by parsing PE exports               | load-code/pe                                         |
 +------------------------------------------------------+------------------------------------------------------+
-[0m
-[0m[0m[0m
+

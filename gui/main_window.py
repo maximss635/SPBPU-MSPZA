@@ -5,6 +5,7 @@ import threading
 import psutil
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
+from PyQt5.QtCore import Qt
 
 from gui.ask_process_window import AskProcessWindow
 from gui.main_window_ui import Ui_MainWindow
@@ -90,7 +91,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.button_start_scan.clicked.connect(self._on_button_start_scan)
         self.button_stop_scan.clicked.connect(self._on_button_stop_scan)
-        self.button_clear.clicked.connect(self._on_button_clear)
         self.button_capa_analyze.clicked.connect(self._on_button_capa_analyze)
 
         self.checkBox_pid.setChecked(True)
@@ -101,10 +101,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
-
-        self.main_table_2.setColumnWidth(0, 400)
-        self.main_table_2.setColumnWidth(1, 100)
-        self.main_table_2.setColumnWidth(2, 100)
 
         self.capa_table.setColumnWidth(0, 270)
         self.capa_table.setColumnWidth(1, 270)
@@ -127,8 +123,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.capa_table.setItem(2, 1, QTableWidgetItem(self.capa_titles[3]))
         self.capa_table.setItem(4, 0, QTableWidgetItem(self.capa_titles[4]))
         self.capa_table.setItem(4, 1, QTableWidgetItem(self.capa_titles[5]))
-
-        self.button_add.clicked.connect(self._on_button_add)
 
     def _create_thread(self):
         self._thr = ThreadScanner()
@@ -174,7 +168,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.checkBox_exepath.isChecked(),
             self.checkBox_netactiuvity.isChecked(),
             self.checkBox_sign.isChecked(),
-            self.checkBox_packing.isChecked()
+            self.checkBox_packing.isChecked(),
+            self.checkBox_sections.isChecked()
         )
 
         for i, need_flag in enumerate(need_model):
@@ -196,9 +191,35 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             table.setItem(row_num, 0, QTableWidgetItem(""))
 
         table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
-        table.setItem(row_num, 2, QTableWidgetItem(str(printable_entity[2])))
-        table.setItem(row_num, 3, QTableWidgetItem(str(printable_entity[3])))
-        table.setItem(row_num, 4, QTableWidgetItem(str(printable_entity[4])))
+
+        net_activity = printable_entity[2]
+        table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
+        if net_activity:
+            table.item(row_num, 2).setBackground(Qt.red)
+        else:
+            table.item(row_num, 2).setBackground(Qt.green)
+
+        sign_check = str(printable_entity[3])
+        table.setItem(row_num, 3, QTableWidgetItem(sign_check))
+        if sign_check == "True":
+            table.item(row_num, 3).setBackground(Qt.green)
+        else:
+            table.item(row_num, 3).setBackground(Qt.red)
+
+        packing = str(printable_entity[4])
+        table.setItem(row_num, 4, QTableWidgetItem(packing))
+        if packing == "":
+            table.item(row_num, 4).setBackground(Qt.green)
+        else:
+            table.item(row_num, 4).setBackground(Qt.red)
+
+        table.setItem(row_num, 5, QTableWidgetItem(str(printable_entity[5])))
+
+        have_wx = printable_entity[6]
+        if have_wx:
+            table.item(row_num, 5).setBackground(Qt.red)
+        else:
+            table.item(row_num, 5).setBackground(Qt.green)
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
@@ -255,12 +276,13 @@ class ThreadScanner(threading.Thread, QObject):
 
         self.flag_run = False
 
-    def start(self, need_pid, need_path, need_networkactivity, need_sign, need_packing) -> None:
+    def start(self, need_pid, need_path, need_networkactivity, need_sign, need_packing, need_sections) -> None:
         self.need_pid = need_pid
         self.need_path = need_path
         self.need_sign = need_sign
         self.need_networkactivity = need_networkactivity
         self.need_packing = need_packing
+        self.need_sections = need_sections
 
         self.flag_run = True
 
@@ -291,12 +313,14 @@ class ThreadScanner(threading.Thread, QObject):
                 full_path,
                 network_activity,
                 sign_check_str,
-                packed_str
+                packed_str,
+                attrs_str,
+                have_wx
             ) = self._get_printable_proc_information(proc, netconnection_model)
             print("Add to printable table", i)
 
             self._put_to_table(
-                (proc.pid, full_path, network_activity, sign_check_str, packed_str), i
+                (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx), i
             )
 
     def _get_printable_proc_information(self, proc, netconnection_model):
@@ -354,7 +378,18 @@ class ThreadScanner(threading.Thread, QObject):
         else:
             is_packed_str = ""
 
-        return full_path, network_activity_str, sign_check_str, is_packed_str
+        attrs_str = ""
+        have_wx = False
+        if self.need_sections:
+            sections = analyze_pe_file(full_path)
+            attrs_str = ""
+            for addr, attrs in sections.items():
+                attrs_str += "{}: {}, ".format(hex(addr), attrs)
+                if "WX" in attrs:
+                    have_wx = True
+            attrs_str = attrs_str[:-2]
+
+        return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx
 
     @staticmethod
     def _get_full_path_of_proc(proc):

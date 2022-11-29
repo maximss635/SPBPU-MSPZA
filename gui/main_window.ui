@@ -77,6 +77,20 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_sections">
+           <property name="text">
+            <string>sections</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_sections_2">
+           <property name="text">
+            <string>code diff</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -104,6 +118,16 @@
          <column>
           <property name="text">
            <string>packing</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>sections</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>code diff</string>
           </property>
          </column>
         </widget>
@@ -173,73 +197,6 @@
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
-     <attribute name="title">
-      <string>Section analyze</string>
-     </attribute>
-     <widget class="QWidget" name="layoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>651</width>
-        <height>411</height>
-       </rect>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QTableWidget" name="main_table_2">
-         <column>
-          <property name="text">
-           <string>exe-path</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>section</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>attributes</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QPushButton" name="button_add">
-           <property name="text">
-            <string>Add</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="button_clear">
-           <property name="text">
-            <string>Clear</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </widget>
     <widget class="QWidget" name="tab_3">
      <attribute name="title">
       <string>Capa</string>
@@ -257,7 +214,7 @@
        <string/>
       </property>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>10</x>
