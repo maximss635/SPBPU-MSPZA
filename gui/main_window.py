@@ -95,7 +95,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.button_capa_analyze_2.clicked.connect(self._on_button_get_codediff)
 
         self.checkBox_pid.setChecked(True)
-        self.checkBox_sign.setChecked(True)
+        self.checkBox_sign.setChecked(False)
         self.checkBox_exepath.setChecked(True)
         self.checkBox_netactiuvity.setChecked(True)
         self.checkBox_packing.setChecked(False)
@@ -103,11 +103,11 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if hasattr(self, "button_debug"):
             self.button_debug.clicked.connect(lambda: self.debug("debug"))
 
-        self.capa_table.setColumnWidth(0, 270)
-        self.capa_table.setColumnWidth(1, 270)
+        self.capa_table.setColumnWidth(0, 500)
+        self.capa_table.setColumnWidth(1, 500)
 
-        self.table_codediff.setColumnWidth(0, 300)
-        self.table_codediff.setColumnWidth(1, 300)
+        self.table_codediff.setColumnWidth(0, 500)
+        self.table_codediff.setColumnWidth(1, 500)
 
         self.capa_titles = [
             "ATT&CK Tactic",

@@ -17,10 +17,10 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>60</y>
-      <width>661</width>
-      <height>451</height>
+      <x>10</x>
+      <y>10</y>
+      <width>1041</width>
+      <height>601</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -35,8 +35,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>651</width>
-        <height>411</height>
+        <width>1031</width>
+        <height>551</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -121,9 +121,6 @@
         </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" name="verticalLayout"/>
-       </item>
-       <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QPushButton" name="button_start_scan">
@@ -164,9 +161,9 @@
      <widget class="QWidget" name="layoutWidget_2">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>0</y>
-        <width>641</width>
+        <width>1031</width>
         <height>41</height>
        </rect>
       </property>
@@ -203,10 +200,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <widget class="QTableWidget" name="table_codediff">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>50</y>
-        <width>641</width>
-        <height>361</height>
+        <width>1031</width>
+        <height>501</height>
        </rect>
       </property>
       <column>
@@ -241,9 +238,9 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>0</y>
-        <width>641</width>
+        <width>1031</width>
         <height>41</height>
        </rect>
       </property>
@@ -280,10 +277,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
      <widget class="QTableWidget" name="capa_table">
       <property name="geometry">
        <rect>
-        <x>10</x>
+        <x>0</x>
         <y>50</y>
-        <width>631</width>
-        <height>341</height>
+        <width>1031</width>
+        <height>501</height>
        </rect>
       </property>
       <row>
