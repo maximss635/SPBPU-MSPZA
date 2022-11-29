@@ -1,76 +1,80 @@
+import shutil
 import sys
+import threading
 
 import pefile
-from reactivex import create
-import functools
-import subprocess
+from PyQt5.QtCore import QObject, pyqtSignal
 import os
 
 
+class PDBRunner(threading.Thread, QObject):
 
-def get_diff(path_disk, path_dump) -> list:
+    signal_ready = pyqtSignal(object)
 
-    pe1 = pefile.PE(path_disk)
-    pe2 = pefile.PE(path_dump)
+    def __init__(self, pid, path_exe):
+        threading.Thread.__init__(self)
+        QObject.__init__(self)
 
-    print("Creating 2 pe-objects")
-    print("Sections in object 1: {}".format(len(pe1.sections)))
-    print("Sections in object 2: {}".format(len(pe2.sections)))
+        self.pid = pid
+        self.path_exe = path_exe
+        self.p = None
 
-    res = []
+    def __get_diff(self, pe_exe, pe_dump) -> list:
+        print("Creating 2 pe-objects")
+        print("Sections in object 1: {}".format(len(pe_exe.sections)))
+        print("Sections in object 2: {}".format(len(pe_dump.sections)))
 
-    for i, (section1, section2) in enumerate(zip(pe1.sections, pe2.sections)):
-        data_in_disk = section1.get_data()
-        data_in_dump = section2.get_data()
+        res = {}
 
-        diff = set(data_in_dump) - set(data_in_disk)
-        d = len(diff) / len(data_in_dump)
+        for i, (section1, section2) in enumerate(zip(pe_exe.sections, pe_dump.sections)):
+            data_in_disk = section1.get_data()
+            data_in_dump = section2.get_data()
 
-        res.append(d)
+            diff = set(data_in_dump) - set(data_in_disk)
+            d = len(diff) / len(data_in_dump)
 
-    return res
+            res[section2.Misc_PhysicalAddress] = d
 
+        return res
 
-def on_dump_ready(pid, path_exe):
+    def run(self) -> None:
+        path_bdb = "./../exe/pdb" if sys.platform == "linux" else "..\\exe\\pd64.exe"
+        cmd = path_bdb + " -pid " + str(self.pid)
 
-    # Вот тут получил путь до файла с расширением .exe в папке с pid процессом и передай в get_diff
+        try:
+            olddir = os.getcwd()
+            if not os.path.exists(str(self.pid)):
+                os.mkdir(str(self.pid))
+            os.chdir(str(self.pid))
+            os.system(cmd)
+            os.chdir(olddir)
 
-    path_dump = None
-    for file in os.listdir(str(pid)):
-        if file[-4:] == ".exe":
-            path_dump = file
-            break
+            for file in os.listdir(str(self.pid)):
+                if file[-4:] == ".exe":
+                    path_dump = str(self.pid) + os.sep + file
+                    break
+            else:
+                path_dump = None
 
-    diffs = get_diff(path_disk=path_exe, path_dump=path_dump)
+            print("path_dump = ", path_dump)
 
-
-def dump_process(observer, pid):
-    print("start dump_process")
-
-    if not os.path.isdir(str(pid)):
-        os.mkdir(str(pid))
-
-    old_dir = os.getcwd()
-    os.chdir(str(pid))
-
-    path_pd64 = "exe/pdb64" if sys.platform == "linux" else "exe/pdb64.exe"
-    cmd = path_pd64 + " -pid " + str(pid)
-    subprocess.run(cmd)
-
-    os.chdir(old_dir)
-
-    observer.on_completed()
-
+            if path_dump:
+                diffs = self.__get_diff(pefile.PE(self.path_exe), pefile.PE(path_dump))
+                try:
+                    shutil.rmtree(str(self.pid))
+                except Exception:
+                    pass
+            else:
+                diffs = None
+            self.signal_ready.emit(diffs)
+        except Exception:
+            self.signal_ready.emit({})
 
 def compare_bin(pid, path_exe):
-    print("compare_bin", pid, path_exe)
+    thr = PDBRunner(pid, path_exe)
+    thr.start()
 
-    dump_process_wrapper = functools.partial(dump_process, pid=pid)
-
-    dump_observer = create(dump_process_wrapper)
-    dump_observer.subscribe(
-        on_completed=lambda: on_dump_ready(pid, path_exe),
-    )
+    return thr.signal_ready
 
 
 if __name__ == '__main__':

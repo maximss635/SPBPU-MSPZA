@@ -106,6 +106,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.capa_table.setColumnWidth(0, 270)
         self.capa_table.setColumnWidth(1, 270)
 
+        self.table_codediff.setColumnWidth(0, 300)
+        self.table_codediff.setColumnWidth(1, 300)
+
         self.capa_titles = [
             "ATT&CK Tactic",
             "ATT&CK Technique",
@@ -222,9 +225,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
-
-        self.table_network_activity.setRowCount(0)
-
         self._thr.stop()
 
     def _on_button_add(self):
@@ -266,7 +266,21 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if not pid:
             return
 
-        codediff.compare_bin(pid=pid, path_exe=path_exe)
+        signal = codediff.compare_bin(pid=pid, path_exe=path_exe)
+        signal.connect(self._on_codediff_ready)
+
+        self.table_codediff.setRowCount(1)
+        self.table_codediff.setItem(0, 0, QTableWidgetItem("Analyzing..."))
+        self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
+
+    def _on_codediff_ready(self, diffs):
+        print("_on_codediff_ready", diffs)
+
+        self.table_codediff.setRowCount(len(diffs.keys()))
+
+        for i, (addr, diff) in enumerate(diffs.items()):
+            self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
+            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(diff)))
 
 
 class ThreadScanner(threading.Thread, QObject):
