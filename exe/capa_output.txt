@@ -5,7 +5,7 @@
 | os                     | windows                                                                            |
 | format                 | pe                                                                                 |
 | arch                   | i386                                                                               |
-| path                   | /home/m/all/ibks/5year/МСПЦА/3/exescaner/test/exe_test_capa.exe                    |
+| path                   | C:\Users\MrRobot\Desktop\SPBPU-MSPZA\testcases\test_capa.exe                       |
 +------------------------+------------------------------------------------------------------------------------+
 
 +------------------------+------------------------------------------------------------------------------------+

@@ -61,6 +61,7 @@ class PDBRunner(threading.Thread, QObject):
             if path_dump:
                 diffs = self.__get_diff(pefile.PE(self.path_exe), pefile.PE(path_dump))
                 try:
+                    #pass
                     shutil.rmtree(str(self.pid))
                 except Exception:
                     pass
