@@ -25,7 +25,7 @@ def run_capa(path_exe):
             self.signal_ready.emit(self.path_out)
 
     path_capa = "./exe/capa" if sys.platform == "linux" else "exe\\capa.exe"
-    thr = CapaThread(path_capa, path_exe, "capa/capa_output.txt")
+    thr = CapaThread(path_capa, path_exe, "exe/capa_output.txt")
 
     thr.start()
 

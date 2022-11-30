@@ -16,6 +16,9 @@ from workers.scanner import Scanner
 from workers.sign_check import check_sign
 
 
+NOT_SCANED = "NOT_SCANED"
+
+
 def _capa_parsing(capa_lines):
     """
     Парсинг вывод утилиты capa
@@ -184,6 +187,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def _put_to_table(self, table, printable_entity, row_num):
         print("put_to_table", printable_entity, row_num)
+
+
+
+        reds_count = 0
+        reds = []
+
         table.setRowCount(table.rowCount() + 1)
 
         if self.checkBox_pid.isChecked():
@@ -197,6 +206,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
         if net_activity:
             table.item(row_num, 2).setBackground(Qt.red)
+            reds_count = reds_count + 1
+            reds.append("Have net activity")
         else:
             table.item(row_num, 2).setBackground(Qt.green)
 
@@ -207,6 +218,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.item(row_num, 3).setBackground(Qt.red)
 
+            if sign_check != NOT_SCANED:
+                reds_count = reds_count + 1
+                reds.append("Bad sign {}".format(sign_check))
+
         packing = str(printable_entity[4])
         table.setItem(row_num, 4, QTableWidgetItem(packing))
         if packing == "":
@@ -214,14 +229,31 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.item(row_num, 4).setBackground(Qt.red)
 
+            if packing != NOT_SCANED:
+                reds_count = reds_count + 1
+                reds.append("is packing")
+
         attrs = str(printable_entity[5])
         table.setItem(row_num, 5, QTableWidgetItem(attrs))
 
         have_wx = printable_entity[6]
         if have_wx or not attrs:
             table.item(row_num, 5).setBackground(Qt.red)
+            reds_count = reds_count + 1
+            
+            reds.append("Have WX")
         else:
             table.item(row_num, 5).setBackground(Qt.green)
+
+        print("reds = ", reds)
+
+        if reds_count >= 2:
+            table.item(row_num, 0).setBackground(Qt.red)
+            table.item(row_num, 1).setBackground(Qt.red)
+        else:
+            table.item(row_num, 0).setBackground(Qt.green)
+            table.item(row_num, 1).setBackground(Qt.green)
+
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
@@ -281,6 +313,13 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         for i, (addr, diff) in enumerate(diffs.items()):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
             self.table_codediff.setItem(i, 1, QTableWidgetItem(str(diff)))
+
+            if diff > 0.02:
+                self.table_codediff.item(i, 1).setBackground(Qt.red)
+            else:
+                self.table_codediff.item(i, 1).setBackground(Qt.green)
+
+
 
 
 class ThreadScanner(threading.Thread, QObject):
@@ -393,12 +432,12 @@ class ThreadScanner(threading.Thread, QObject):
             else:
                 sign_check_str = "Unknown"
         else:
-            sign_check_str = ""
+            sign_check_str = NOT_SCANED
 
         if self.need_packing:
             is_packed_str = check_packer(full_path)
         else:
-            is_packed_str = ""
+            is_packed_str = NOT_SCANED
 
         attrs_str = ""
         have_wx = False
@@ -410,6 +449,8 @@ class ThreadScanner(threading.Thread, QObject):
                 if "WX" in attrs:
                     have_wx = True
             attrs_str = attrs_str[:-2]
+        else:
+            attrs_str = NOT_SCANED
 
         return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx
 
