@@ -89,6 +89,8 @@ def urlReport(arg):
 
     # load returned json from virustotal into a python dictionary called decodedResponse
     decodedResponse = json.loads(response.text)
+    if decodedResponse.get("error"):
+        return -100, -100
     # grab the epoch timestamp at run time and convert to human-readable for the html report header information
     timeStamp = time.time()
 
