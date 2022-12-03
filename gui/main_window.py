@@ -259,7 +259,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 capa_output_to_table = str(len(outputs[-1]) + len(outputs[-2]))
                 table.setItem(row, 5, QTableWidgetItem(capa_output_to_table))
 
-            signal = capa_worker.run_capa(str(printable_entity[1]))
+            signal = capa_worker.run_capa(str(printable_entity[1]), row_num)
             signal.connect(_on_capa_ready)
             table.setItem(row_num, 5, QTableWidgetItem("Analyze..."))
 
