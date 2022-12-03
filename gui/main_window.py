@@ -16,9 +16,6 @@ from workers.scanner import Scanner
 from workers.sign_check import check_sign
 
 
-NOT_SCANED = "NOT_SCANED"
-
-
 def _capa_parsing(capa_lines):
     """
     Парсинг вывод утилиты capa
@@ -206,15 +203,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         net_activity = printable_entity[2]
         table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
         if net_activity:
-            if check_good_ip:
-                table.item(row_num, 2).setBackground(Qt.green)
-            else:
-                if "svchost" in exe_path or pid == 0 or "MicrosoftHost" in exe_path or "winserv" in exe_path:
-                    table.item(row_num, 2).setBackground(Qt.green)
-                else:
-                    reds_count = reds_count + 1
-                    reds.append("Have BAD net activity")
-                    table.item(row_num, 2).setBackground(Qt.red)
+            table.item(row_num, 2).setBackground(Qt.red)
         else:
             table.item(row_num, 2).setBackground(Qt.green)
 
@@ -225,20 +214,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.item(row_num, 3).setBackground(Qt.red)
 
-            if sign_check != NOT_SCANED:
-                reds_count = reds_count + 1
-                reds.append("Bad sign {}".format(sign_check))
-
         packing = str(printable_entity[4])
         table.setItem(row_num, 4, QTableWidgetItem(packing))
         if packing == "":
             table.item(row_num, 4).setBackground(Qt.green)
         else:
             table.item(row_num, 4).setBackground(Qt.red)
-
-            if packing != NOT_SCANED:
-                reds_count = reds_count + 1
-                reds.append("is packing")
 
         attrs = str(printable_entity[5])
         table.setItem(row_num, 5, QTableWidgetItem(attrs))
@@ -247,7 +228,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if have_wx or not attrs:
             table.item(row_num, 5).setBackground(Qt.red)
             reds_count = reds_count + 1
-            
+
             reds.append("Have WX")
         else:
             table.item(row_num, 5).setBackground(Qt.green)
@@ -347,13 +328,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
             self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
             self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
-
-            if diff > 0.02:
-                self.table_codediff.item(i, 1).setBackground(Qt.red)
-            else:
-                self.table_codediff.item(i, 1).setBackground(Qt.green)
-
-
 
 
 class ThreadScanner(threading.Thread, QObject):
@@ -466,12 +440,12 @@ class ThreadScanner(threading.Thread, QObject):
             else:
                 sign_check_str = "Unknown"
         else:
-            sign_check_str = NOT_SCANED
+            sign_check_str = ""
 
         if self.need_packing:
             is_packed_str = check_packer(full_path)
         else:
-            is_packed_str = NOT_SCANED
+            is_packed_str = ""
 
         attrs_str = ""
         have_wx = False
@@ -483,8 +457,6 @@ class ThreadScanner(threading.Thread, QObject):
                 if "WX" in attrs:
                     have_wx = True
             attrs_str = attrs_str[:-2]
-        else:
-            attrs_str = NOT_SCANED
 
         return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx
 
