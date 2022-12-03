@@ -20,7 +20,10 @@ def run_capa(path_exe):
             self.path_out = path_out
 
         def run(self) -> None:
+            print("run capa")
+            print("{} {} > {}".format(self.path_capa, self.path_exe, self.path_out))
             os.system("{} {} > {}".format(self.path_capa, self.path_exe, self.path_out))
+            print("capc ready")
 
             self.signal_ready.emit(self.path_out)
 

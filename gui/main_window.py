@@ -186,11 +186,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self._thr.start(*need_model)
 
     def _put_to_table(self, table, printable_entity, row_num):
-        check_good_ip = printable_entity[7]
+        print("put_to_table", printable_entity, row_num)
+
+
 
         reds_count = 0
         reds = []
-        pid = int(printable_entity[0])
 
         table.setRowCount(table.rowCount() + 1)
 
@@ -199,8 +200,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.setItem(row_num, 0, QTableWidgetItem(""))
 
-        exe_path = str(printable_entity[1])
-        table.setItem(row_num, 1, QTableWidgetItem(exe_path))
+        table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
 
         net_activity = printable_entity[2]
         table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
@@ -251,12 +251,40 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.item(row_num, 5).setBackground(Qt.green)
 
+        print("reds = ", reds)
+
         if reds_count >= 2:
             table.item(row_num, 0).setBackground(Qt.red)
             table.item(row_num, 1).setBackground(Qt.red)
         else:
             table.item(row_num, 0).setBackground(Qt.green)
             table.item(row_num, 1).setBackground(Qt.green)
+
+
+        if self.checkBox_capa.isChecked() and have_wx:
+            self.flag_capa_ready = False
+
+            def _on_capa_ready(path):
+                with open(path, "r") as f:
+                    lines = f.readlines()
+
+                # os.remove(path)
+                outputs = _capa_parsing(lines)
+                n_out = len(outputs[-1]) + len(outputs[-2])
+
+                table.setItem(row_num, 6, QTableWidgetItem(str(n_out)))
+                if n_out > 0:
+                    table.item(row_num, 6).setBackground(Qt.red)
+                else:
+                    table.item(row_num, 6).setBackground(Qt.green)
+
+                self.flag_capa_ready = True
+
+            signal = capa_worker.run_capa(str(printable_entity[1]))
+            signal.connect(_on_capa_ready)
+
+            while not self.flag_capa_ready:
+                time.sleep(2)
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
@@ -373,22 +401,18 @@ class ThreadScanner(threading.Thread, QObject):
             if not self.flag_run:
                 break
 
-            try:
-                (
-                    full_path,
-                    network_activity,
-                    sign_check_str,
-                    packed_str,
-                    attrs_str,
-                    have_wx,
-                    check_ip_good
-                ) = self._get_printable_proc_information(proc, netconnection_model)
-            except Exception as err:
-                print(err)
-                continue
+            (
+                full_path,
+                network_activity,
+                sign_check_str,
+                packed_str,
+                attrs_str,
+                have_wx
+            ) = self._get_printable_proc_information(proc, netconnection_model)
+            print("Add to printable table", i)
 
             self._put_to_table(
-                (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx, check_ip_good), i
+                (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx), i
             )
 
     def _get_printable_proc_information(self, proc, netconnection_model):
@@ -398,13 +422,9 @@ class ThreadScanner(threading.Thread, QObject):
             full_path = ""
 
         network_activity_str = None
-        chech_good_ip = None
 
         if netconnection_model:
             net_connection_entity = netconnection_model.get(proc.pid)
-
-            if self.need_networkactivity and net_connection_entity:
-                chech_good_ip = self._netconnection_worker.check_ip(net_connection_entity)
         else:
             net_connection_entity = None
             network_activity_str = ""
@@ -429,6 +449,8 @@ class ThreadScanner(threading.Thread, QObject):
                 r_ip,
                 r_port,
             )
+
+            print(net_connection_entity)
 
             self._update_network_cache(proc)
 
@@ -461,7 +483,7 @@ class ThreadScanner(threading.Thread, QObject):
         else:
             attrs_str = NOT_SCANED
 
-        return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx, chech_good_ip
+        return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx
 
     @staticmethod
     def get_full_path_of_proc(proc):
