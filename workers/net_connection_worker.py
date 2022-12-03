@@ -19,6 +19,9 @@ class NetConnectionWorker:
             print(f"CHECK {ip_struct.raddr.ip}")
             answ = vt_ip_url_analysis.urlReport(ip_struct.raddr.ip)
             print("ANSWER = ", answ)
+
+            self._good_ip_cache[ip_struct.raddr.ip] = (answ[0] >= 0)
+
             return answ[0] >= 0
         except Exception as err:
             print("ERROR {}".format(err))
