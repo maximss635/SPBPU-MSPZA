@@ -14,6 +14,7 @@ from workers.net_connection_worker import NetConnectionWorker
 from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
+import time
 
 
 def _capa_parsing(capa_lines):
