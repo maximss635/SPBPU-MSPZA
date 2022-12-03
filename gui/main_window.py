@@ -256,8 +256,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
                 # os.remove(path)
                 outputs = _capa_parsing(lines)
-                capa_output_to_table = str(len(outputs[-1]) + len(outputs[-2]))
-                table.setItem(row, 6, QTableWidgetItem(capa_output_to_table))
+                capa_output_to_table = len(outputs[-1]) + len(outputs[-2])
+                table.setItem(row, 6, QTableWidgetItem(str(capa_output_to_table)))
+                if capa_output_to_table > 0:
+                    table.item(row, 6).setBackground(Qt.red)
+                else:
+                    table.item(row, 6).setBackground(Qt.green)
 
             signal = capa_worker.run_capa(str(printable_entity[1]), row_num)
             signal.connect(_on_capa_ready)
