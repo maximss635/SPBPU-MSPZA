@@ -101,12 +101,14 @@ class Ui_MainWindow(object):
         self.table_codediff = QtWidgets.QTableWidget(self.tab_2)
         self.table_codediff.setGeometry(QtCore.QRect(0, 50, 1031, 501))
         self.table_codediff.setObjectName("table_codediff")
-        self.table_codediff.setColumnCount(2)
+        self.table_codediff.setColumnCount(3)
         self.table_codediff.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         self.table_codediff.setHorizontalHeaderItem(0, item)
         item = QtWidgets.QTableWidgetItem()
         self.table_codediff.setHorizontalHeaderItem(1, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.table_codediff.setHorizontalHeaderItem(2, item)
         self.tabWidget.addTab(self.tab_2, "")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")
@@ -165,7 +167,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -207,6 +209,8 @@ class Ui_MainWindow(object):
         item = self.table_codediff.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Section"))
         item = self.table_codediff.horizontalHeaderItem(1)
+        item.setText(_translate("MainWindow", "Attributes"))
+        item = self.table_codediff.horizontalHeaderItem(2)
         item.setText(_translate("MainWindow", "Diff percent"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Code diff"))
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"

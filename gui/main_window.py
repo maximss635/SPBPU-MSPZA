@@ -109,8 +109,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.capa_table.setColumnWidth(0, 500)
         self.capa_table.setColumnWidth(1, 500)
 
-        self.table_codediff.setColumnWidth(0, 500)
-        self.table_codediff.setColumnWidth(1, 500)
+        self.table_codediff.setColumnWidth(0, 300)
+        self.table_codediff.setColumnWidth(1, 300)
+        self.table_codediff.setColumnWidth(2, 300)
 
         self.capa_titles = [
             "ATT&CK Tactic",
@@ -335,15 +336,17 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.table_codediff.setRowCount(1)
         self.table_codediff.setItem(0, 0, QTableWidgetItem("Analyzing..."))
         self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
+        self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
 
     def _on_codediff_ready(self, diffs):
         print("_on_codediff_ready", diffs)
 
         self.table_codediff.setRowCount(len(diffs.keys()))
 
-        for i, (addr, diff) in enumerate(diffs.items()):
+        for i, (addr, (attrs, diff)) in enumerate(diffs.items()):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
-            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(diff)))
+            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
+            self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
 
             if diff > 0.02:
                 self.table_codediff.item(i, 1).setBackground(Qt.red)
