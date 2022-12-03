@@ -15,6 +15,9 @@ class NetConnectionWorker:
         if ip_struct.raddr.ip in self._good_ip_cache:
             return self._good_ip_cache[ip_struct.raddr.ip]
 
+        if ip_struct.raddr.ip.startswith("192.168"):
+            return True
+
         try:
             print(f"CHECK {ip_struct.raddr.ip}")
             answ = vt_ip_url_analysis.urlReport(ip_struct.raddr.ip)

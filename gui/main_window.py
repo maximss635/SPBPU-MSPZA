@@ -369,15 +369,19 @@ class ThreadScanner(threading.Thread, QObject):
             if not self.flag_run:
                 break
 
-            (
-                full_path,
-                network_activity,
-                sign_check_str,
-                packed_str,
-                attrs_str,
-                have_wx,
-                check_ip_good
-            ) = self._get_printable_proc_information(proc, netconnection_model)
+            try:
+                (
+                    full_path,
+                    network_activity,
+                    sign_check_str,
+                    packed_str,
+                    attrs_str,
+                    have_wx,
+                    check_ip_good
+                ) = self._get_printable_proc_information(proc, netconnection_model)
+            except Exception as err:
+                print(err)
+                continue
 
             self._put_to_table(
                 (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx, check_ip_good), i
