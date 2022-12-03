@@ -257,7 +257,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                 # os.remove(path)
                 outputs = _capa_parsing(lines)
                 capa_output_to_table = str(len(outputs[-1]) + len(outputs[-2]))
-                table.item(row, 5, QTableWidgetItem(capa_output_to_table))
+                table.setItem(row, 5, QTableWidgetItem(capa_output_to_table))
 
             signal = capa_worker.run_capa(str(printable_entity[1]))
             signal.connect(_on_capa_ready)
