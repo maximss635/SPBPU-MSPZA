@@ -147,8 +147,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         signal = capa_worker.run_capa(self.textEdit.toPlainText())
         signal.connect(self._on_capa_result)
 
-    def _on_capa_result(self, path_out):
-        print("_on_capa_result", path_out)
+    def _on_capa_result(self, args):
+        print("_on_capa_result", args)
+
+        path_out, _ = args
 
         with open(path_out, "r") as f:
             lines = f.readlines()
@@ -243,41 +245,27 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             table.item(row_num, 0).setBackground(Qt.green)
             table.item(row_num, 1).setBackground(Qt.green)
 
-
         if self.checkBox_capa.isChecked() and have_wx:
-            self.flag_capa_ready = False
+            def _on_capa_ready(args):
+                print("_on_capa_result", args)
 
-            def _on_capa_ready(path):
+                path, row = args
+
                 with open(path, "r") as f:
                     lines = f.readlines()
 
                 # os.remove(path)
                 outputs = _capa_parsing(lines)
-                n_out = len(outputs[-1]) + len(outputs[-2])
-
-                table.setItem(row_num, 6, QTableWidgetItem(str(n_out)))
-                if n_out > 0:
-                    table.item(row_num, 6).setBackground(Qt.red)
-                else:
-                    table.item(row_num, 6).setBackground(Qt.green)
-
-                self.flag_capa_ready = True
+                capa_output_to_table = str(len(outputs[-1]) + len(outputs[-2]))
+                table.item(row, 5, QTableWidgetItem(capa_output_to_table))
 
             signal = capa_worker.run_capa(str(printable_entity[1]))
             signal.connect(_on_capa_ready)
-
-            while not self.flag_capa_ready:
-                time.sleep(2)
+            table.setItem(row_num, 5, QTableWidgetItem("Analyze..."))
 
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
         self._thr.stop()
-
-    def _on_button_add(self):
-        self.window = AskProcessWindow(self)
-        self.window.show()
-
-        print(self.window.path_process)
 
     def on_new_proc(self, path_proc):
         print("on_new_proc", path_proc)
