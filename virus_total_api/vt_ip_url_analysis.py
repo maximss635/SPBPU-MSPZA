@@ -90,7 +90,15 @@ def urlReport(arg):
     # load returned json from virustotal into a python dictionary called decodedResponse
     decodedResponse = json.loads(response.text)
     if decodedResponse.get("error"):
+        print(decodedResponse)
         return -100, -100
+
+    try:
+        if decodedResponse["data"]["attributes"]["categories"]["Forcepoint ThreatSeeker"] == "sex":
+            return -200, -200
+    except KeyError:
+        pass
+
     # grab the epoch timestamp at run time and convert to human-readable for the html report header information
     timeStamp = time.time()
 
