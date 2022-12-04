@@ -1,20 +1,19 @@
-from workers import codediff
 import socket
 import threading
 
 import psutil
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, Qt, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
-from PyQt5.QtCore import Qt
 
 from gui.main_window_ui import Ui_MainWindow
-from workers import capa_worker
+from workers import capa_worker, codediff
 from workers.net_connection_worker import NetConnectionWorker
 from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
 
 NOT_SCANED = "NOT_SCANED"
+
 
 def _capa_parsing(capa_lines):
     """
@@ -24,10 +23,11 @@ def _capa_parsing(capa_lines):
     :return: 6 блоков строчек
     :rtype: tuple[list[str]]
     """
+
     def get_start_index(lines, line_template):
         for _i, line in enumerate(lines):
             if line_template in line:
-                while '---------' not in lines[_i]:
+                while "---------" not in lines[_i]:
                     _i = _i + 1
                 return 1 + _i
         return -1
@@ -38,7 +38,7 @@ def _capa_parsing(capa_lines):
 
     def get_stop_index(lines, start_index):
         for _j, line in enumerate(lines[start_index:]):
-            if '------------' in line:
+            if "------------" in line:
                 return _j + start_index - 1
 
         return -1
@@ -47,9 +47,9 @@ def _capa_parsing(capa_lines):
     index_2_stop = get_stop_index(capa_lines, index_2)
     index_3_stop = get_stop_index(capa_lines, index_3)
 
-    output_1_2 = capa_lines[index_1:index_1_stop + 1]
-    output_3_4 = capa_lines[index_2:index_2_stop + 1]
-    output_5_6 = capa_lines[index_3:index_3_stop + 1]
+    output_1_2 = capa_lines[index_1 : index_1_stop + 1]
+    output_3_4 = capa_lines[index_2 : index_2_stop + 1]
+    output_5_6 = capa_lines[index_3 : index_3_stop + 1]
 
     print(output_1_2)
     print(output_3_4)
@@ -59,22 +59,22 @@ def _capa_parsing(capa_lines):
     for line in output_1_2:
         if line.startswith("|"):
             line = line[1:]
-        output_1.append(line.split('|')[0])
-        output_2.append(line.split('|')[1])
+        output_1.append(line.split("|")[0])
+        output_2.append(line.split("|")[1])
 
     output_3, output_4 = [], []
     for line in output_3_4:
         if line.startswith("|"):
             line = line[1:]
-        output_3.append(line.split('|')[0])
-        output_4.append(line.split('|')[1])
+        output_3.append(line.split("|")[0])
+        output_4.append(line.split("|")[1])
 
     output_5, output_6 = [], []
     for line in output_5_6:
         if line.startswith("|"):
             line = line[1:]
-        output_5.append(line.split('|')[0])
-        output_6.append(line.split('|')[1])
+        output_5.append(line.split("|")[0])
+        output_6.append(line.split("|")[1])
 
     return output_1, output_2, output_3, output_4, output_5, output_6
 
@@ -116,7 +116,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             "MBC Objective",
             "MBC Behavior",
             "CAPABILITY",
-            "NAMESPACE"
+            "NAMESPACE",
         ]
 
         self.capa_table.setItem(0, 0, QTableWidgetItem(self.capa_titles[0]))
@@ -164,7 +164,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             new_output = []
             for line in output:
                 new_output.append(line.replace("\x1b[34m", "").replace("\x1b[0m", ""))
-            self.capa_table.setItem(i, j, QTableWidgetItem("\n".join(new_output) if new_output else "-"))
+            self.capa_table.setItem(
+                i, j, QTableWidgetItem("\n".join(new_output) if new_output else "-")
+            )
 
     def _on_button_start_scan(self):
         need_model = (
@@ -207,7 +209,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             if check_good_ip:
                 table.item(row_num, 2).setBackground(Qt.green)
             else:
-                if ("svchost" in exe_path) or (pid == 0) or ("MicrosoftHost" in exe_path) or ("winserv" in exe_path):
+                if (
+                    ("svchost" in exe_path)
+                    or (pid == 0)
+                    or ("MicrosoftHost" in exe_path)
+                    or ("winserv" in exe_path)
+                ):
                     table.item(row_num, 2).setBackground(Qt.green)
                 else:
                     reds_count = reds_count + 1
@@ -258,6 +265,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             table.item(row_num, 1).setBackground(Qt.green)
 
         if self.checkBox_capa.isChecked() and have_wx:
+
             def _on_capa_ready(args):
                 print("_on_capa_result", args)
 
@@ -324,7 +332,6 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
         self.table_codediff.setItem(0, 2, QTableWidgetItem("Analyzing..."))
 
-
     def _on_codediff_ready(self, diffs):
         print("_on_codediff_ready", diffs)
 
@@ -355,7 +362,15 @@ class ThreadScanner(threading.Thread, QObject):
 
         self.flag_run = False
 
-    def start(self, need_pid, need_path, need_networkactivity, need_sign, need_packing, need_sections) -> None:
+    def start(
+        self,
+        need_pid,
+        need_path,
+        need_networkactivity,
+        need_sign,
+        need_packing,
+        need_sections,
+    ) -> None:
         self.need_pid = need_pid
         self.need_path = need_path
         self.need_sign = need_sign
@@ -396,14 +411,24 @@ class ThreadScanner(threading.Thread, QObject):
                     packed_str,
                     attrs_str,
                     have_wx,
-                    check_ip_good
+                    check_ip_good,
                 ) = self._get_printable_proc_information(proc, netconnection_model)
             except Exception as err:
                 print(err)
                 continue
 
             self._put_to_table(
-                (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx, check_ip_good), i
+                (
+                    proc.pid,
+                    full_path,
+                    network_activity,
+                    sign_check_str,
+                    packed_str,
+                    attrs_str,
+                    have_wx,
+                    check_ip_good,
+                ),
+                i,
             )
 
     def _get_printable_proc_information(self, proc, netconnection_model):
@@ -418,7 +443,9 @@ class ThreadScanner(threading.Thread, QObject):
         if netconnection_model:
             net_connection_entity = netconnection_model.get(proc.pid)
             if self.need_networkactivity and net_connection_entity:
-                chech_good_ip = self._netconnection_worker.check_ip(net_connection_entity)
+                chech_good_ip = self._netconnection_worker.check_ip(
+                    net_connection_entity
+                )
         else:
             net_connection_entity = None
             network_activity_str = ""
@@ -475,7 +502,15 @@ class ThreadScanner(threading.Thread, QObject):
         else:
             attrs_str = NOT_SCANED
 
-        return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx, chech_good_ip
+        return (
+            full_path,
+            network_activity_str,
+            sign_check_str,
+            is_packed_str,
+            attrs_str,
+            have_wx,
+            chech_good_ip,
+        )
 
     @staticmethod
     def get_full_path_of_proc(proc):
