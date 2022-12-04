@@ -225,11 +225,6 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </column>
       <column>
        <property name="text">
-        <string>Attributes</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
         <string>Diff percent</string>
        </property>
       </column>

@@ -5,6 +5,7 @@ import psutil
 from PyQt5.QtCore import QObject, Qt, pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 
+from gui import codediff_ui
 from gui.main_window_ui import Ui_MainWindow
 from workers import capa_worker, codediff
 from workers.net_connection_worker import NetConnectionWorker
@@ -106,9 +107,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.capa_table.setColumnWidth(0, 500)
         self.capa_table.setColumnWidth(1, 500)
 
-        self.table_codediff.setColumnWidth(0, 300)
-        self.table_codediff.setColumnWidth(1, 300)
-        self.table_codediff.setColumnWidth(2, 300)
+        self.table_codediff.setColumnWidth(0, 500)
+        self.table_codediff.setColumnWidth(1, 500)
 
         self.capa_titles = [
             "ATT&CK Tactic",
@@ -125,6 +125,29 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.capa_table.setItem(2, 1, QTableWidgetItem(self.capa_titles[3]))
         self.capa_table.setItem(4, 0, QTableWidgetItem(self.capa_titles[4]))
         self.capa_table.setItem(4, 1, QTableWidgetItem(self.capa_titles[5]))
+
+        self.table_codediff.itemClicked.connect(self._on_codediff_item_clicked)
+
+    #     tmp
+    #     self.table_codediff.setRowCount(1)
+    #     self.table_codediff.setItem(0, 1, QTableWidgetItem("123"))
+    #     self.table_codediff.setItem(0, 2, QTableWidgetItem("456"))
+
+    def _on_codediff_item_clicked(self, item):
+        row, column = item.row(), item.column()
+        print("_on_codediff_item_clicked", column, row)
+
+        class CodeDiffWindow(codediff_ui.Ui_MainWindow, QMainWindow):
+            def __init__(self):
+                codediff_ui.Ui_MainWindow.__init__(self)
+                QMainWindow.__init__(self)
+                self.setupUi(self)
+
+        self.window_codediff = CodeDiffWindow()
+        self.window_codediff.show()
+
+        printable_codediff = codediff.get_printable_codediff(codediff.get_last_path_exe(), codediff.get_last_path_dump(), row)
+        self.window_codediff.label_codediff.setText(printable_codediff)
 
     def _create_thread(self):
         self._thr = ThreadScanner()
@@ -337,14 +360,13 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.table_codediff.setRowCount(len(diffs.keys()))
 
-        for i, (addr, (diff, attrs)) in enumerate(diffs.items()):
+        for i, (addr, (diff, _)) in enumerate(diffs.items()):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
-            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
-            self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
+            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(diff)))
             if diff > 0.02:
-                self.table_codediff.item(i, 2).setBackground(Qt.red)
+                self.table_codediff.item(i, 1).setBackground(Qt.red)
             else:
-                self.table_codediff.item(i, 2).setBackground(Qt.green)
+                self.table_codediff.item(i, 1).setBackground(Qt.green)
 
 
 class ThreadScanner(threading.Thread, QObject):

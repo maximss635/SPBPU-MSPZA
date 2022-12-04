@@ -1,11 +1,26 @@
 import shutil
 import sys
 import threading
-
+from capstone import *
+import difflib
 import pefile
 from PyQt5.QtCore import QObject, pyqtSignal
 import os
 from workers.pe_worker import analyze_section
+
+differ = difflib.Differ()
+
+
+__path_exe = None
+__path_dump = None
+
+
+def get_last_path_exe():
+    return __path_exe
+
+
+def get_last_path_dump():
+    return __path_dump
 
 
 class PDBRunner(threading.Thread, QObject):
@@ -58,6 +73,8 @@ class PDBRunner(threading.Thread, QObject):
                 path_dump = None
 
             print("path_dump = ", path_dump)
+            global __path_dump
+            __path_dump = path_dump
 
             if path_dump:
                 diffs = self.__get_diff(pefile.PE(self.path_exe), pefile.PE(path_dump))
@@ -72,12 +89,36 @@ class PDBRunner(threading.Thread, QObject):
         except Exception:
             self.signal_ready.emit({})
 
+
 def compare_bin(pid, path_exe):
+
+    global __path_exe
+    __path_exe = path_exe
+
     thr = PDBRunner(pid, path_exe)
     thr.start()
 
     return thr.signal_ready
 
 
-if __name__ == '__main__':
-    compare_bin(8012)
+def get_printable_codediff(path_exe, path_dump, section_num):
+    if path_dump is None:
+        return ""
+    if path_exe is None:
+        return ""
+
+    pe_exe = pefile.PE(path_exe)
+    pe_dump = pefile.PE(path_dump)
+    data_exe = pe_exe.sections[section_num].get_data()
+    data_dump = pe_dump.sections[section_num].get_data()
+
+    printable_assembler_exe = ""
+    for i in md.disasm(data_exe, 0):
+        printable_assembler_exe += "0x%x:\t%s\t%s\n" % (i.address, i.mnemonic, i.op_str)
+
+    printable_assembler_dump = ""
+    for i in md.disasm(data_dump, 0):
+        printable_assembler_dump += "0x%x:\t%s\t%s\n" % (i.address, i.mnemonic, i.op_str)
+
+    diff = differ.compare(printable_assembler_exe.splitlines(), printable_assembler_dump.splitlines())
+    return "\n".join(diff)
