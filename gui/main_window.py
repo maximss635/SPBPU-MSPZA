@@ -208,7 +208,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             if check_good_ip:
                 table.item(row_num, 2).setBackground(Qt.green)
             else:
-                if "svchost" in exe_path or pid == 0:
+                if "svchost" in exe_path or pid == 0 or "MicrosoftHost" in exe_path or "winserv" in exe_path:
                     table.item(row_num, 2).setBackground(Qt.green)
                 else:
                     reds_count = reds_count + 1
