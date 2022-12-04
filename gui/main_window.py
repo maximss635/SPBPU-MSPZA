@@ -342,9 +342,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
             self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
             if diff > 0.02:
-                self.table_codediff.item(i, 1).setBackground(Qt.red)
+                self.table_codediff.item(i, 2).setBackground(Qt.red)
             else:
-                self.table_codediff.item(i, 1).setBackground(Qt.green)
+                self.table_codediff.item(i, 2).setBackground(Qt.green)
 
 
 class ThreadScanner(threading.Thread, QObject):
