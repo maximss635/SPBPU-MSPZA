@@ -4,17 +4,15 @@ import threading
 
 import psutil
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
-from gui.ask_process_window import AskProcessWindow
 from gui.main_window_ui import Ui_MainWindow
 from workers import capa_worker
 from workers.net_connection_worker import NetConnectionWorker
 from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
-import time
 
 
 def _capa_parsing(capa_lines):
