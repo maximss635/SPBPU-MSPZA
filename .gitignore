@@ -3,4 +3,4 @@ __pycache__/
 logs/
 test/
 test_cases/
-
+virus_total_api/report.html
