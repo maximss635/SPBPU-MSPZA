@@ -337,7 +337,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.table_codediff.setRowCount(len(diffs.keys()))
 
-        for i, (addr, (attrs, diff)) in enumerate(diffs.items()):
+        for i, (addr, (diff, attrs)) in enumerate(diffs.items()):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
             self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
             self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
