@@ -9,6 +9,7 @@ import os
 from workers.pe_worker import analyze_section
 
 differ = difflib.Differ()
+md = Cs(CS_ARCH_X86, CS_MODE_64)
 
 
 __path_exe = None
