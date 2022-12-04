@@ -198,7 +198,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.setItem(row_num, 0, QTableWidgetItem(""))
 
-        table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
+        exe_path = str(printable_entity[1])
+        table.setItem(row_num, 1, QTableWidgetItem(exe_path))
 
         net_activity = printable_entity[2]
         table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
@@ -206,10 +207,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             if check_good_ip:
                 table.item(row_num, 2).setBackground(Qt.green)
             else:
-                table.item(row_num, 2).setBackground(Qt.red)
-
-            reds_count = reds_count + 1
-            reds.append("Have net activity")
+                if "svchost" in exe_path:
+                    table.item(row_num, 2).setBackground(Qt.green)
+                else:
+                    reds_count = reds_count + 1
+                    reds.append("Have BAD net activity")
+                    table.item(row_num, 2).setBackground(Qt.red)
         else:
             table.item(row_num, 2).setBackground(Qt.green)
 
