@@ -213,8 +213,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
                     reds_count = reds_count + 1
                     reds.append("Have BAD net activity")
                     table.item(row_num, 2).setBackground(Qt.red)
-        else:
-            table.item(row_num, 2).setBackground(Qt.green)
+        # else:
+        #     table.item(row_num, 2).setBackground(Qt.green)
 
         sign_check = str(printable_entity[3])
         table.setItem(row_num, 3, QTableWidgetItem(sign_check))
