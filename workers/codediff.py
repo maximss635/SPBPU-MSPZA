@@ -118,5 +118,5 @@ def get_printable_codediff(path_exe, path_dump, section_num):
     for i in md.disasm(data_dump, 0):
         printable_assembler_dump += "0x%x:\t%s\t%s\n" % (i.address, i.mnemonic, i.op_str)
 
-    diff = differ.compare(printable_assembler_exe.splitlines(), printable_assembler_dump.splitlines())
+    diff = differ.compare(printable_assembler_dump.splitlines(), printable_assembler_exe.splitlines())
     return "\n".join(diff)
