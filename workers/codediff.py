@@ -20,7 +20,7 @@ class PDBRunner(threading.Thread, QObject):
         self.path_exe = path_exe
         self.p = None
 
-    def __get_diff(self, pe_exe, pe_dump) -> list:
+    def __get_diff(self, pe_exe, pe_dump) -> dict:
         print("Creating 2 pe-objects")
         print("Sections in object 1: {}".format(len(pe_exe.sections)))
         print("Sections in object 2: {}".format(len(pe_dump.sections)))
