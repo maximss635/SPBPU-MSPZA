@@ -146,7 +146,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.window_codediff = CodeDiffWindow()
         self.window_codediff.show()
 
-        printable_codediff = codediff.get_printable_codediff(codediff.get_last_path_exe(), codediff.get_last_path_dump(), row)
+        path_dump = None
+        if hasattr(self, "path_dump"):
+            path_dump = self.path_dump
+        printable_codediff = codediff.get_printable_codediff(codediff.get_last_path_exe(), path_dump, row)
         self.window_codediff.label_codediff.setText(printable_codediff)
 
     def _create_thread(self):
@@ -355,7 +358,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
         self.table_codediff.setItem(0, 2, QTableWidgetItem("Analyzing..."))
 
-    def _on_codediff_ready(self, diffs):
+    def _on_codediff_ready(self, args):
+        diffs, path_dump = args
+        self.last_path_dump = path_dump
         print("_on_codediff_ready", diffs)
 
         self.table_codediff.setRowCount(len(diffs.keys()))
