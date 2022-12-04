@@ -4,10 +4,9 @@ import threading
 
 import psutil
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
+from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 from PyQt5.QtCore import Qt
 
-from gui.ask_process_window import AskProcessWindow
 from gui.main_window_ui import Ui_MainWindow
 from workers import capa_worker
 from workers.net_connection_worker import NetConnectionWorker
@@ -15,9 +14,7 @@ from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
 
-
 NOT_SCANED = "NOT_SCANED"
-
 
 def _capa_parsing(capa_lines):
     """
@@ -109,8 +106,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.capa_table.setColumnWidth(0, 500)
         self.capa_table.setColumnWidth(1, 500)
 
-        self.table_codediff.setColumnWidth(0, 500)
-        self.table_codediff.setColumnWidth(1, 500)
+        self.table_codediff.setColumnWidth(0, 300)
+        self.table_codediff.setColumnWidth(1, 300)
+        self.table_codediff.setColumnWidth(2, 300)
 
         self.capa_titles = [
             "ATT&CK Tactic",
@@ -148,8 +146,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         signal = capa_worker.run_capa(self.textEdit.toPlainText())
         signal.connect(self._on_capa_result)
 
-    def _on_capa_result(self, path_out):
-        print("_on_capa_result", path_out)
+    def _on_capa_result(self, args):
+        print("_on_capa_result", args)
+
+        path_out, _ = args
 
         with open(path_out, "r") as f:
             lines = f.readlines()
@@ -187,10 +187,9 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
     def _put_to_table(self, table, printable_entity, row_num):
         check_good_ip = printable_entity[7]
-
+        pid = int(printable_entity[0])
         reds_count = 0
         reds = []
-        pid = int(printable_entity[0])
 
         table.setRowCount(table.rowCount() + 1)
 
@@ -222,9 +221,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if sign_check == "True":
             table.item(row_num, 3).setBackground(Qt.green)
         else:
-            table.item(row_num, 3).setBackground(Qt.red)
-
             if sign_check != NOT_SCANED:
+                table.item(row_num, 3).setBackground(Qt.red)
                 reds_count = reds_count + 1
                 reds.append("Bad sign {}".format(sign_check))
 
@@ -233,11 +231,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if packing == "":
             table.item(row_num, 4).setBackground(Qt.green)
         else:
-            table.item(row_num, 4).setBackground(Qt.red)
-
             if packing != NOT_SCANED:
                 reds_count = reds_count + 1
                 reds.append("is packing")
+                table.item(row_num, 4).setBackground(Qt.red)
 
         attrs = str(printable_entity[5])
         table.setItem(row_num, 5, QTableWidgetItem(attrs))
@@ -246,10 +243,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if have_wx or not attrs:
             table.item(row_num, 5).setBackground(Qt.red)
             reds_count = reds_count + 1
-            
+
             reds.append("Have WX")
         else:
             table.item(row_num, 5).setBackground(Qt.green)
+
+        print("reds = ", reds)
 
         if reds_count >= 2:
             table.item(row_num, 0).setBackground(Qt.red)
@@ -258,15 +257,31 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             table.item(row_num, 0).setBackground(Qt.green)
             table.item(row_num, 1).setBackground(Qt.green)
 
+        if self.checkBox_capa.isChecked() and have_wx:
+            def _on_capa_ready(args):
+                print("_on_capa_result", args)
+
+                path, row = args
+
+                with open(path, "r") as f:
+                    lines = f.readlines()
+
+                # os.remove(path)
+                outputs = _capa_parsing(lines)
+                capa_output_to_table = len(outputs[-1]) + len(outputs[-2])
+                table.setItem(row, 6, QTableWidgetItem(str(capa_output_to_table)))
+                if capa_output_to_table > 0:
+                    table.item(row, 6).setBackground(Qt.red)
+                else:
+                    table.item(row, 6).setBackground(Qt.green)
+
+            signal = capa_worker.run_capa(str(printable_entity[1]), row_num)
+            signal.connect(_on_capa_ready)
+            table.setItem(row_num, 6, QTableWidgetItem("Analyze..."))
+
     def _on_button_stop_scan(self):
         self.debug("_on_button_stop_scan")
         self._thr.stop()
-
-    def _on_button_add(self):
-        self.window = AskProcessWindow(self)
-        self.window.show()
-
-        print(self.window.path_process)
 
     def on_new_proc(self, path_proc):
         print("on_new_proc", path_proc)
@@ -307,22 +322,22 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.table_codediff.setRowCount(1)
         self.table_codediff.setItem(0, 0, QTableWidgetItem("Analyzing..."))
         self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
+        self.table_codediff.setItem(0, 2, QTableWidgetItem("Analyzing..."))
+
 
     def _on_codediff_ready(self, diffs):
         print("_on_codediff_ready", diffs)
 
         self.table_codediff.setRowCount(len(diffs.keys()))
 
-        for i, (addr, diff) in enumerate(diffs.items()):
+        for i, (addr, (attrs, diff)) in enumerate(diffs.items()):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
-            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(diff)))
-
+            self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
+            self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
             if diff > 0.02:
                 self.table_codediff.item(i, 1).setBackground(Qt.red)
             else:
                 self.table_codediff.item(i, 1).setBackground(Qt.green)
-
-
 
 
 class ThreadScanner(threading.Thread, QObject):
@@ -402,7 +417,6 @@ class ThreadScanner(threading.Thread, QObject):
 
         if netconnection_model:
             net_connection_entity = netconnection_model.get(proc.pid)
-
             if self.need_networkactivity and net_connection_entity:
                 chech_good_ip = self._netconnection_worker.check_ip(net_connection_entity)
         else:

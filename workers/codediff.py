@@ -5,6 +5,7 @@ import threading
 import pefile
 from PyQt5.QtCore import QObject, pyqtSignal
 import os
+from workers.pe_worker import analyze_section
 
 
 class PDBRunner(threading.Thread, QObject):
@@ -33,7 +34,7 @@ class PDBRunner(threading.Thread, QObject):
             diff = set(data_in_dump) - set(data_in_disk)
             d = len(diff) / len(data_in_dump)
 
-            res[section2.Misc_PhysicalAddress] = d
+            res[section2.Misc_PhysicalAddress] = (d, analyze_section(section2))
 
         return res
 

@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -84,6 +84,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="checkBox_capa">
+           <property name="text">
+            <string>capa</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -116,6 +123,11 @@
          <column>
           <property name="text">
            <string>sections</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>capa</string>
           </property>
          </column>
         </widget>
@@ -213,6 +225,11 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </column>
       <column>
        <property name="text">
+        <string>Attributes</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
         <string>Diff percent</string>
        </property>
       </column>
@@ -285,42 +302,42 @@ li.checked::marker { content: &quot;\2612&quot;; }
       </property>
       <row>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </row>
       <row>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </row>
       <row>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </row>
       <row>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </row>
       <row>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </row>
       <row>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </row>
       <column>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </column>
       <column>
        <property name="text">
-        <string> </string>
+        <string/>
        </property>
       </column>
      </widget>

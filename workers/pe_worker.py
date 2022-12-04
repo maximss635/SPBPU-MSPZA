@@ -9,7 +9,7 @@ from utils import Logger
 LOGGER = Logger("pe_worker")
 
 
-def __analyze_section(section):
+def analyze_section(section):
     """
     https://blog.kowalczyk.info/articles/pefileformat.html
     0x00000020	Code section
@@ -50,7 +50,7 @@ def analyze_pe_file(filepath):
         pe = pefile.PE(filepath)
         result_struct = {}
         for section in pe.sections:
-            result_struct[section.Misc_PhysicalAddress] = __analyze_section(section)
+            result_struct[section.Misc_PhysicalAddress] = analyze_section(section)
 
         return result_struct
     except Exception as err:
