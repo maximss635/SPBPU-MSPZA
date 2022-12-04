@@ -14,6 +14,7 @@ from workers.pe_worker import analyze_pe_file, check_packer
 from workers.scanner import Scanner
 from workers.sign_check import check_sign
 
+NOT_SCANED = "NOT_SCANED"
 
 def _capa_parsing(capa_lines):
     """
@@ -185,10 +186,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self._thr.start(*need_model)
 
     def _put_to_table(self, table, printable_entity, row_num):
-        print("put_to_table", printable_entity, row_num)
-
-
-
+        check_good_ip = printable_entity[7]
+        pid = int(printable_entity[0])
         reds_count = 0
         reds = []
 
@@ -199,12 +198,21 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.setItem(row_num, 0, QTableWidgetItem(""))
 
-        table.setItem(row_num, 1, QTableWidgetItem(str(printable_entity[1])))
+        exe_path = str(printable_entity[1])
+        table.setItem(row_num, 1, QTableWidgetItem(exe_path))
 
         net_activity = printable_entity[2]
         table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
         if net_activity:
-            table.item(row_num, 2).setBackground(Qt.red)
+            if check_good_ip:
+                table.item(row_num, 2).setBackground(Qt.green)
+            else:
+                if "svchost" in exe_path or pid == 0 or "MicrosoftHost" in exe_path or "winserv" in exe_path:
+                    table.item(row_num, 2).setBackground(Qt.green)
+                else:
+                    reds_count = reds_count + 1
+                    reds.append("Have BAD net activity")
+                    table.item(row_num, 2).setBackground(Qt.red)
         else:
             table.item(row_num, 2).setBackground(Qt.green)
 
@@ -213,14 +221,20 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         if sign_check == "True":
             table.item(row_num, 3).setBackground(Qt.green)
         else:
-            table.item(row_num, 3).setBackground(Qt.red)
+            if sign_check != NOT_SCANED:
+                table.item(row_num, 3).setBackground(Qt.red)
+                reds_count = reds_count + 1
+                reds.append("Bad sign {}".format(sign_check))
 
         packing = str(printable_entity[4])
         table.setItem(row_num, 4, QTableWidgetItem(packing))
         if packing == "":
             table.item(row_num, 4).setBackground(Qt.green)
         else:
-            table.item(row_num, 4).setBackground(Qt.red)
+            if packing != NOT_SCANED:
+                reds_count = reds_count + 1
+                reds.append("is packing")
+                table.item(row_num, 4).setBackground(Qt.red)
 
         attrs = str(printable_entity[5])
         table.setItem(row_num, 5, QTableWidgetItem(attrs))
@@ -308,7 +322,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.table_codediff.setRowCount(1)
         self.table_codediff.setItem(0, 0, QTableWidgetItem("Analyzing..."))
         self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
-        self.table_codediff.setItem(0, 1, QTableWidgetItem("Analyzing..."))
+        self.table_codediff.setItem(0, 2, QTableWidgetItem("Analyzing..."))
+
 
     def _on_codediff_ready(self, diffs):
         print("_on_codediff_ready", diffs)
@@ -319,6 +334,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             self.table_codediff.setItem(i, 0, QTableWidgetItem(hex(addr)))
             self.table_codediff.setItem(i, 1, QTableWidgetItem(str(attrs)))
             self.table_codediff.setItem(i, 2, QTableWidgetItem(str(diff)))
+            if diff > 0.02:
+                self.table_codediff.item(i, 1).setBackground(Qt.red)
+            else:
+                self.table_codediff.item(i, 1).setBackground(Qt.green)
 
 
 class ThreadScanner(threading.Thread, QObject):
@@ -369,18 +388,22 @@ class ThreadScanner(threading.Thread, QObject):
             if not self.flag_run:
                 break
 
-            (
-                full_path,
-                network_activity,
-                sign_check_str,
-                packed_str,
-                attrs_str,
-                have_wx
-            ) = self._get_printable_proc_information(proc, netconnection_model)
-            print("Add to printable table", i)
+            try:
+                (
+                    full_path,
+                    network_activity,
+                    sign_check_str,
+                    packed_str,
+                    attrs_str,
+                    have_wx,
+                    check_ip_good
+                ) = self._get_printable_proc_information(proc, netconnection_model)
+            except Exception as err:
+                print(err)
+                continue
 
             self._put_to_table(
-                (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx), i
+                (proc.pid, full_path, network_activity, sign_check_str, packed_str, attrs_str, have_wx, check_ip_good), i
             )
 
     def _get_printable_proc_information(self, proc, netconnection_model):
@@ -390,9 +413,12 @@ class ThreadScanner(threading.Thread, QObject):
             full_path = ""
 
         network_activity_str = None
+        chech_good_ip = None
 
         if netconnection_model:
             net_connection_entity = netconnection_model.get(proc.pid)
+            if self.need_networkactivity and net_connection_entity:
+                chech_good_ip = self._netconnection_worker.check_ip(net_connection_entity)
         else:
             net_connection_entity = None
             network_activity_str = ""
@@ -418,8 +444,6 @@ class ThreadScanner(threading.Thread, QObject):
                 r_port,
             )
 
-            print(net_connection_entity)
-
             self._update_network_cache(proc)
 
         if self.need_sign:
@@ -431,12 +455,12 @@ class ThreadScanner(threading.Thread, QObject):
             else:
                 sign_check_str = "Unknown"
         else:
-            sign_check_str = ""
+            sign_check_str = NOT_SCANED
 
         if self.need_packing:
             is_packed_str = check_packer(full_path)
         else:
-            is_packed_str = ""
+            is_packed_str = NOT_SCANED
 
         attrs_str = ""
         have_wx = False
@@ -448,8 +472,10 @@ class ThreadScanner(threading.Thread, QObject):
                 if "WX" in attrs:
                     have_wx = True
             attrs_str = attrs_str[:-2]
+        else:
+            attrs_str = NOT_SCANED
 
-        return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx
+        return full_path, network_activity_str, sign_check_str, is_packed_str, attrs_str, have_wx, chech_good_ip
 
     @staticmethod
     def get_full_path_of_proc(proc):
