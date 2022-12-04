@@ -147,8 +147,8 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         self.window_codediff.show()
 
         path_dump = None
-        if hasattr(self, "path_dump"):
-            path_dump = self.path_dump
+        if hasattr(self, "last_path_dump"):
+            path_dump = self.last_path_dump
         printable_codediff = codediff.get_printable_codediff(codediff.get_last_path_exe(), path_dump, row)
         self.window_codediff.label_codediff.setText(printable_codediff)
 
