@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'codediff.ui'
+# Form implementation generated from reading ui file 'gui/codediff.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -14,16 +14,23 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(477, 304)
+        MainWindow.resize(509, 420)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        self.scrollArea = QtWidgets.QScrollArea(self.centralwidget)
+        self.scrollArea.setGeometry(QtCore.QRect(30, 30, 411, 311))
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 409, 309))
+        self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.label_codediff = QtWidgets.QLabel(self.centralwidget)
-        self.label_codediff.setGeometry(QtCore.QRect(20, 10, 441, 251))
-        self.label_codediff.setText("")
+        self.label_codediff.setGeometry(QtCore.QRect(370, 380, 51, 14))
         self.label_codediff.setObjectName("label_codediff")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 477, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 509, 27))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -36,3 +43,4 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label_codediff.setText(_translate("MainWindow", "TextLabel"))

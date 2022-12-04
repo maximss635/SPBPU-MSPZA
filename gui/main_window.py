@@ -128,10 +128,10 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         self.table_codediff.itemClicked.connect(self._on_codediff_item_clicked)
 
-    #     tmp
-    #     self.table_codediff.setRowCount(1)
-    #     self.table_codediff.setItem(0, 1, QTableWidgetItem("123"))
-    #     self.table_codediff.setItem(0, 2, QTableWidgetItem("456"))
+        # tmp
+        # self.table_codediff.setRowCount(1)
+        # self.table_codediff.setItem(0, 1, QTableWidgetItem("123"))
+        # self.table_codediff.setItem(0, 2, QTableWidgetItem("456"))
 
     def _on_codediff_item_clicked(self, item):
         row, column = item.row(), item.column()
@@ -149,8 +149,12 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         path_dump = None
         if hasattr(self, "last_path_dump"):
             path_dump = self.last_path_dump
+
+        self.window_codediff.scrollArea.setWidget(self.window_codediff.label_codediff)
         printable_codediff = codediff.get_printable_codediff(codediff.get_last_path_exe(), path_dump, row)
         self.window_codediff.label_codediff.setText(printable_codediff)
+
+        # self.window_codediff.label_codediff.setText("\n".join(["test"] * 5000))
 
     def _create_thread(self):
         self._thr = ThreadScanner()
