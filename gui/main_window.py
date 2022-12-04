@@ -190,6 +190,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
 
         reds_count = 0
         reds = []
+        pid = int(printable_entity[0])
 
         table.setRowCount(table.rowCount() + 1)
 
@@ -207,7 +208,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
             if check_good_ip:
                 table.item(row_num, 2).setBackground(Qt.green)
             else:
-                if "svchost" in exe_path or "System Idle" in exe_path:
+                if "svchost" in exe_path or pid == 0:
                     table.item(row_num, 2).setBackground(Qt.green)
                 else:
                     reds_count = reds_count + 1
