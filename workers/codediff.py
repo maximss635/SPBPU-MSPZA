@@ -102,6 +102,8 @@ def compare_bin(pid, path_exe):
 
 
 def get_printable_codediff(path_exe, path_dump, section_num):
+    print("get_printable_codediff", path_exe, path_dump, section_num)
+
     if path_dump is None:
         return ""
     if path_exe is None:
