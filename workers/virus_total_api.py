@@ -24,6 +24,10 @@ def check_ip(target_ip):
     response = requests.request("GET", URL + url_id, headers=headers)
     response = json.loads(response.text)
     response = response.get("data", {}).get("attributes", {})
+
+    if "porn" in str(response.get("categories")) or "sex" in str(response.get("categories")):
+        return 1
+
     harmless = response.get("total_votes", {}).get("harmless", 0)  # безвредный
     malicious = response.get("total_votes", {}).get("malicious", 0)  # злонамеренный
 
