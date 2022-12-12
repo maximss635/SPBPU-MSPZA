@@ -234,7 +234,13 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         table.setItem(row_num, 1, QTableWidgetItem(exe_path))
 
         net_activity = printable_entity[2]
-        table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
+
+        net_score = printable_entity[8]
+        if net_score is None:
+            table.setItem(row_num, 2, QTableWidgetItem(str(net_activity)))
+        else:
+            table.setItem(row_num, 2, QTableWidgetItem(str(net_activity) + " [score={}]".format(net_score)))
+
         if net_activity:
             if check_good_ip:
                 table.item(row_num, 2).setBackground(Qt.green)
@@ -285,7 +291,7 @@ class MainWindow(Ui_MainWindow, QMainWindow):
         else:
             table.item(row_num, 5).setBackground(Qt.green)
 
-        print("reds = ", reds)
+        # print("reds = ", reds)
 
         if reds_count >= 2:
             table.item(row_num, 0).setBackground(Qt.red)
@@ -442,7 +448,7 @@ class ThreadScanner(threading.Thread, QObject):
                     packed_str,
                     attrs_str,
                     have_wx,
-                    check_ip_good,
+                    check_ip_good, score
                 ) = self._get_printable_proc_information(proc, netconnection_model)
             except Exception as err:
                 print(err)
@@ -457,7 +463,7 @@ class ThreadScanner(threading.Thread, QObject):
                     packed_str,
                     attrs_str,
                     have_wx,
-                    check_ip_good,
+                    check_ip_good, score
                 ),
                 i,
             )
@@ -471,10 +477,12 @@ class ThreadScanner(threading.Thread, QObject):
         network_activity_str = None
         chech_good_ip = None
 
+        score = None
+
         if netconnection_model:
             net_connection_entity = netconnection_model.get(proc.pid)
             if self.need_networkactivity and net_connection_entity:
-                chech_good_ip = self._netconnection_worker.check_ip(
+                chech_good_ip, score = self._netconnection_worker.check_ip(
                     net_connection_entity
                 )
         else:
@@ -540,7 +548,7 @@ class ThreadScanner(threading.Thread, QObject):
             is_packed_str,
             attrs_str,
             have_wx,
-            chech_good_ip,
+            chech_good_ip, score
         )
 
     @staticmethod

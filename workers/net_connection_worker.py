@@ -1,7 +1,5 @@
 import psutil
-
-from virus_total_api import vt_ip_url_analysis
-
+from workers import virus_total_api
 
 class NetConnectionWorker:
     def __init__(self):
@@ -10,22 +8,23 @@ class NetConnectionWorker:
 
     def check_ip(self, ip_struct):
         if not ip_struct.raddr:
-            return True
+            return True, None
 
         if ip_struct.raddr.ip in self._good_ip_cache:
-            return self._good_ip_cache[ip_struct.raddr.ip]
+            score = self._good_ip_cache[ip_struct.raddr.ip]
+            return score == 0, score
 
         if ip_struct.raddr.ip.startswith("192.168"):
             return True
 
         try:
             print(f"CHECK {ip_struct.raddr.ip}")
-            answ = vt_ip_url_analysis.urlReport(ip_struct.raddr.ip)
-            print("ANSWER = ", answ)
+            score = virus_total_api.check_ip(ip_struct.raddr.ip)
+            print("score = ", score)
 
-            self._good_ip_cache[ip_struct.raddr.ip] = (answ[0] >= 0)
+            self._good_ip_cache[ip_struct.raddr.ip] = score
 
-            return answ[0] >= 0
+            return score == 0, score
         except Exception as err:
             print("ERROR {}".format(err))
             return True
